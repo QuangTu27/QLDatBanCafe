@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 public class MyConnection {
     private String userName = "sa";
     private String password = "123456";
-    private String url ="jdbc:sqlserver://localhost:1433;" +"databaseName=Java_QLSanPham_Bai9;" 
+    private String url ="jdbc:sqlserver://localhost:1433;" +"databaseName=QL_DatBan_Cafe;"
                 +"encrypt=false;" +"trustServerCertificate=true;";
 
     private Connection conn ;

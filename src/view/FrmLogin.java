@@ -4,20 +4,34 @@
  */
 package view;
 
-/**
- *
- * @author Admin
- */
-import javax.swing.*;
-import java.awt.*;
+import DAO.TaiKhoanDao;
+import entity.TaiKhoan;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
+import util.Auth;
 
 public class FrmLogin extends JFrame {
 
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JButton btnLogin;
-
+    private TaiKhoanDao dao = new TaiKhoanDao();
+    
     public FrmLogin() {
         initUI();
     }
@@ -80,29 +94,29 @@ public class FrmLogin extends JFrame {
     }
 
     private void login() {
-        String username = txtUsername.getText().trim();
-        String password = new String(txtPassword.getPassword());
+        String user = txtUsername.getText();
+        String pass = new String(txtPassword.getPassword());
 
-        if (username.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Vui lòng nhập đầy đủ thông tin!",
-                    "Lỗi",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        // DEMO (sau này thay bằng DB)
-        if (username.equals("admin") && password.equals("123")) {
-            JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
-
-            // Mở Form Main
-            new FrmMain().setVisible(true);
-            this.dispose();
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    "Sai tên đăng nhập hoặc mật khẩu!",
-                    "Đăng nhập thất bại",
-                    JOptionPane.ERROR_MESSAGE);
+        try {
+            TaiKhoan tk = dao.selectByUsername(user);
+            
+            // Validate
+            if (tk == null) {
+                JOptionPane.showMessageDialog(this, "Sai tên đăng nhập!");
+            } else if (!pass.equals(tk.getMatKhau())) {
+                JOptionPane.showMessageDialog(this, "Sai mật khẩu!");
+            } else {
+                // Đăng nhập thành công
+                Auth.user = tk; // LƯU THÔNG TIN NGƯỜI DÙNG VÀO HỆ THỐNG
+                JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
+                
+                // Mở Form Main (Giả sử file FrmMain nằm cùng package ui)
+                 new FrmMain().setVisible(true);
+                 this.dispose(); // Đóng form login
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi kết nối cơ sở dữ liệu!");
         }
     }
 
@@ -112,4 +126,6 @@ public class FrmLogin extends JFrame {
         });
     }
 }
+
+
 
