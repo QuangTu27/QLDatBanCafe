@@ -4,10 +4,12 @@
  */
 package view;
 
+import javax.swing.JPanel;
+
 /**
  *
  * @author Admin
  */
-public class FrmKhachHang {
+public class FrmKhachHang extends JPanel{
     
 }
