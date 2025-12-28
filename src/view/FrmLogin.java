@@ -1,29 +1,14 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package view;
 
 import DAO.TaiKhoanDao;
 import entity.TaiKhoan;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 import util.Auth;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 
 public class FrmLogin extends JFrame {
 
@@ -31,66 +16,143 @@ public class FrmLogin extends JFrame {
     private JPasswordField txtPassword;
     private JButton btnLogin;
     private TaiKhoanDao dao = new TaiKhoanDao();
-    
+   
+    private final Color MAIN_COLOR = new Color(46, 204, 113); 
     public FrmLogin() {
         initUI();
     }
 
     private void initUI() {
         setTitle("Đăng nhập hệ thống");
-        setSize(400, 300);
+        setSize(750, 450);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+        setLayout(new GridLayout(1, 2)); // Chia đôi màn hình: Trái - Phải
+        setResizable(false); 
+        
+        // 1. PANEL TRÁI
+        JPanel pnlLeft = new JPanel();
+        pnlLeft.setBackground(MAIN_COLOR);
+        pnlLeft.setLayout(new GridBagLayout()); // Để căn giữa nội dung
+        
+        JLabel lblIcon = new JLabel("️️🍵", JLabel.CENTER); // Icon Cafe (Emoji hoặc dùng ảnh)
+        lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 100));
+        lblIcon.setForeground(Color.WHITE);
+        lblIcon.setPreferredSize(new Dimension(200,150));
+//        JLabel lblIcon = new JLabel(); 
+//        ImageIcon iconLogo = loadIcon("/icons/logo.jpg", 150, 150);
+//        if (iconLogo != null) {
+//            lblIcon.setIcon(iconLogo);
+//        } else {
+//            // Phòng hờ nếu chưa có ảnh thì hiện chữ tạm
+//            lblIcon.setText("CAFE");
+//            lblIcon.setFont(new Font("Segoe UI", Font.BOLD, 40));
+//            lblIcon.setForeground(Color.WHITE);
+//        }
 
-        // ===== TITLE =====
-        JLabel lblTitle = new JLabel("PHẦN MỀM QUẢN LÝ CAFE", JLabel.CENTER);
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblTitle.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
-        add(lblTitle, BorderLayout.NORTH);
+        JLabel lblBrand = new JLabel("CAFE MANAGER");
+        lblBrand.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        lblBrand.setForeground(Color.WHITE);
+        
+        JLabel lblSlogan = new JLabel("Quản lý chuyên nghiệp");
+        lblSlogan.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+        lblSlogan.setForeground(new Color(230, 250, 230));
 
-        // ===== FORM =====
-        JPanel pnForm = new JPanel(new GridBagLayout());
+        // Add vào Panel trái
+        GridBagConstraints gbcLeft = new GridBagConstraints();
+        gbcLeft.gridx = 0; gbcLeft.gridy = 0;
+        pnlLeft.add(lblIcon, gbcLeft);
+        
+        gbcLeft.gridy = 1;
+        gbcLeft.insets = new Insets(10, 0, 0, 0);
+        pnlLeft.add(lblBrand, gbcLeft);
+        
+        gbcLeft.gridy = 2;
+        pnlLeft.add(lblSlogan, gbcLeft);
+
+        // 2. PANEL PHẢI (FORM NHẬP LIỆU)
+        JPanel pnlRight = new JPanel();
+        pnlRight.setBackground(Color.WHITE);
+        pnlRight.setLayout(new GridBagLayout()); 
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Tiêu đề Form
+        JLabel lblTitle = new JLabel("ĐĂNG NHẬP");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        lblTitle.setForeground(MAIN_COLOR);
+        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
+
+        // Username
         JLabel lblUser = new JLabel("Tên đăng nhập:");
-        JLabel lblPass = new JLabel("Mật khẩu:");
+        lblUser.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblUser.setForeground(Color.GRAY);
 
         txtUsername = new JTextField(15);
-        txtPassword = new JPasswordField(15);
+        styleTextField(txtUsername); // Hàm làm đẹp ô nhập
 
-        btnLogin = new JButton("Đăng nhập");
+        // Password
+        JLabel lblPass = new JLabel("Mật khẩu:");
+        lblPass.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblPass.setForeground(Color.GRAY);
+
+        txtPassword = new JPasswordField(15);
+        styleTextField(txtPassword); // Hàm làm đẹp ô nhập
+
+        // Button Login
+        btnLogin = new JButton("ĐĂNG NHẬP");
         btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnLogin.setBackground(new Color(52, 152, 219));
+        btnLogin.setBackground(MAIN_COLOR);
         btnLogin.setForeground(Color.WHITE);
         btnLogin.setFocusPainted(false);
+        btnLogin.setBorderPainted(false);
+        btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLogin.setPreferredSize(new Dimension(0, 45)); // Chiều cao nút
 
-        // Row 1
+        // --- SẮP XẾP VÀO PANEL PHẢI ---
         gbc.gridx = 0; gbc.gridy = 0;
-        pnForm.add(lblUser, gbc);
-
-        gbc.gridx = 1;
-        pnForm.add(txtUsername, gbc);
-
-        // Row 2
-        gbc.gridx = 0; gbc.gridy = 1;
-        pnForm.add(lblPass, gbc);
-
-        gbc.gridx = 1;
-        pnForm.add(txtPassword, gbc);
-
-        // Row 3
-        gbc.gridx = 0; gbc.gridy = 2;
         gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        pnForm.add(btnLogin, gbc);
+        gbc.insets = new Insets(0, 0, 30, 0); // Cách xa bên dưới
+        pnlRight.add(lblTitle, gbc);
 
-        add(pnForm, BorderLayout.CENTER);
+        gbc.gridwidth = 1; gbc.insets = new Insets(5, 10, 5, 10);
+        
+        // Dòng User
+        gbc.gridy = 1; 
+        pnlRight.add(lblUser, gbc);
+        gbc.gridy = 2;
+        pnlRight.add(txtUsername, gbc);
 
-        // ===== EVENT =====
+        // Dòng Pass
+        gbc.gridy = 3;
+        pnlRight.add(lblPass, gbc);
+        gbc.gridy = 4;
+        pnlRight.add(txtPassword, gbc);
+
+        // Dòng Button
+        gbc.gridy = 5;
+        gbc.insets = new Insets(30, 10, 10, 10); 
+        pnlRight.add(btnLogin, gbc);
+
+        // Add 2 Panel vào Frame chính
+        add(pnlLeft);
+        add(pnlRight);
+
         btnLogin.addActionListener((ActionEvent e) -> login());
+        
+        getRootPane().setDefaultButton(btnLogin);
+    }
+
+    private void styleTextField(JTextField txt) {
+        txt.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        txt.setForeground(Color.DARK_GRAY);
+        txt.setBorder(BorderFactory.createCompoundBorder(
+            new MatteBorder(0, 0, 2, 0, new Color(200, 200, 200)), 
+            new EmptyBorder(5, 5, 5, 5)
+        ));
+        txt.setBackground(Color.WHITE);
     }
 
     private void login() {
@@ -99,7 +161,6 @@ public class FrmLogin extends JFrame {
 
         try {
             TaiKhoan tk = dao.selectByUsername(user);
-            
             // Validate
             if (tk == null) {
                 JOptionPane.showMessageDialog(this, "Sai tên đăng nhập!");
@@ -107,12 +168,11 @@ public class FrmLogin extends JFrame {
                 JOptionPane.showMessageDialog(this, "Sai mật khẩu!");
             } else {
                 // Đăng nhập thành công
-                Auth.user = tk; // LƯU THÔNG TIN NGƯỜI DÙNG VÀO HỆ THỐNG
+                Auth.user = tk; 
                 JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
                 
-                // Mở Form Main (Giả sử file FrmMain nằm cùng package ui)
                  new FrmMain().setVisible(true);
-                 this.dispose(); // Đóng form login
+                 this.dispose(); 
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -121,11 +181,11 @@ public class FrmLogin extends JFrame {
     }
 
     public static void main(String[] args) {
+        // Set giao diện đẹp theo hệ điều hành
+        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception e) {}
+        
         SwingUtilities.invokeLater(() -> {
             new FrmLogin().setVisible(true);
         });
     }
 }
-
-
-

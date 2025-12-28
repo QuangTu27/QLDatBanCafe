@@ -5,23 +5,23 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import view.FrmKhachHang;
-import view.FrmTaiKhoan;
+import java.util.ArrayList;
+import java.util.List;
 import util.Auth;
 
 public class FrmMain extends JFrame {
 
     private JPanel pnMenu, pnContent, pnBan;
+    
+    // --- 1. DANH SÁCH QUẢN LÝ MENU (ĐỂ ĐỔI MÀU) ---
+    private List<JButton> listMenu = new ArrayList<>(); 
+    private JButton btnActive = null; // Biến lưu nút nào đang được chọn
 
-    // --- BẢNG MÀU GIỐNG ẢNH MẪU ---
-    // Màu xanh lá chủ đạo (Giống ảnh)
-    private final Color COL_SIDEBAR_BG = new Color(88, 175, 87);
-    // Màu xanh đậm hơn cho nút đang chọn hoặc hover
-    private final Color COL_MENU_HOVER = new Color(0, 150, 136);
-    // Màu chữ trắng
+    // Màu sắc
+    private final Color COL_SIDEBAR_BG = Color.DARK_GRAY;
+    private final Color COL_MENU_HOVER = Color.GRAY;
     private final Color COL_TEXT = Color.WHITE;
 
-    // Màu bàn ăn
     private final Color COL_BAN_TRONG = new Color(46, 204, 113);
     private final Color COL_BAN_COKHACH = new Color(231, 76, 60);
     private final Color COL_BAN_DADAT = new Color(241, 196, 15);
@@ -37,35 +37,34 @@ public class FrmMain extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // 1. MENU BÊN TRÁI (SIDEBAR)
         initSidebar();
 
-        // 2. NỘI DUNG BÊN PHẢI (CONTENT)
         pnContent = new JPanel(new BorderLayout());
-        pnContent.setBackground(new Color(245, 245, 245)); // Màu nền xám nhạt
+        pnContent.setBackground(new Color(245, 245, 245));
 
-        // 2a. Header trắng bên phải (Tùy chọn)
         JPanel pnHeader = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnHeader.setBackground(Color.WHITE);
         pnHeader.setPreferredSize(new Dimension(0, 50));
-        pnHeader.add(new JLabel("Xin chào!"));
+        
+        // Hiển thị tên người dùng nếu đã đăng nhập
+        String user = (Auth.isLogin()) ? Auth.user.getTenHienThi() : "Admin";
+        pnHeader.add(new JLabel("Xin chào, " + user + "!  "));
+        
         pnContent.add(pnHeader, BorderLayout.NORTH);
 
-        // 2b. Sơ đồ bàn
         initSoDoBan();
 
         add(pnMenu, BorderLayout.WEST);
         add(pnContent, BorderLayout.CENTER);
     }
 
-    // ===== PHẦN QUAN TRỌNG NHẤT: SIDEBAR GIỐNG MẪU =====
     private void initSidebar() {
         pnMenu = new JPanel();
         pnMenu.setPreferredSize(new Dimension(260, 0));
         pnMenu.setBackground(COL_SIDEBAR_BG);
         pnMenu.setLayout(new BoxLayout(pnMenu, BoxLayout.Y_AXIS));
 
-        // --- 1. PHẦN HEADER USER (HI ! Admin) ---
+        // Header User
         JPanel pnUser = new JPanel();
         pnUser.setLayout(new BoxLayout(pnUser, BoxLayout.Y_AXIS));
         pnUser.setBackground(COL_SIDEBAR_BG);
@@ -81,113 +80,128 @@ public class FrmMain extends JFrame {
         pnUser.add(lblHi);
         pnMenu.add(pnUser);
 
-        // --- 2. DANH SÁCH MENU ---
-        // [NÚT 1] TRANG CHỦ (Về lại sơ đồ bàn)
-        JButton btnTrangChu = createMenuItem("Trang chủ", true);
+        // --- TẠO CÁC NÚT MENU ---
+        
+        // 1. Trang chủ
+        JButton btnTrangChu = createMenuItem("Trang chủ");
         btnTrangChu.addActionListener(e -> {
-            pnBan.removeAll(); // Xóa bàn cũ
-            initSoDoBan();     // Vẽ lại bàn mới (để cập nhật trạng thái xanh/đỏ)
-            switchPanel(pnBan); // Hiện sơ đồ bàn
+            setSelectedMenu(btnTrangChu); // <--- KÍCH HOẠT MÀU
+            pnBan.removeAll();
+            initSoDoBan();
+            switchPanel(pnBan);
         });
         pnMenu.add(btnTrangChu);
 
-        // [NÚT 2] QUẢN LÝ KHÁCH HÀNG (Phần của TÚ - Đã xong)
-        JButton btnKhachHang = createMenuItem("Quản lý khách hàng", false);
+        // 2. Quản lý khách hàng
+        JButton btnKhachHang = createMenuItem("Quản lý khách hàng");
         btnKhachHang.addActionListener(e -> {
-            switchPanel(new FrmKhachHang()); // Gọi Form Khách Hàng
+            setSelectedMenu(btnKhachHang); // <--- KÍCH HOẠT MÀU
+            switchPanel(new FrmKhachHang());
         });
         pnMenu.add(btnKhachHang);
 
-        // [NÚT 3,4,5,6] CÁC CHỨC NĂNG CỦA THÀNH VIÊN KHÁC (Để tạm)
-        pnMenu.add(createMenuItem("Quản lý bàn", false));      // Của Thảo
-        pnMenu.add(createMenuItem("Quản lý Menu", false));     // Của Thảo
-        pnMenu.add(createMenuItem("Quản lý đặt bàn", false));  // Của Minh
-        pnMenu.add(createMenuItem("Thống kê và Hoá đơn", false)); // Của Đăng
+        // 3. Các nút khác (Chưa có chức năng thì chỉ đổi màu thôi)
+        JButton btnBan = createMenuItem("Quản lý bàn");
+        btnBan.addActionListener(e -> setSelectedMenu(btnBan));
+        pnMenu.add(btnBan);
 
-        // --- 3. ĐẨY CÁC NÚT DƯỚI CÙNG XUỐNG ĐÁY ---
+        JButton btnMenu = createMenuItem("Quản lý Menu");
+        btnMenu.addActionListener(e -> setSelectedMenu(btnMenu));
+        pnMenu.add(btnMenu);
+
+        JButton btnDatBan = createMenuItem("Quản lý đặt bàn");
+        btnDatBan.addActionListener(e -> setSelectedMenu(btnDatBan));
+        pnMenu.add(btnDatBan);
+        
+        JButton btnThongKe = createMenuItem("Thống kê & Hóa đơn");
+        btnThongKe.addActionListener(e -> setSelectedMenu(btnThongKe));
+        pnMenu.add(btnThongKe);
+
         pnMenu.add(Box.createVerticalGlue());
 
-        // --- 4. CÁC NÚT CHỨC NĂNG DƯỚI ---
-        // [NÚT 7] QUẢN LÝ TÀI KHOẢN (Phần của TÚ - Chỉ Admin mới thấy)
-        JButton btnTaiKhoan = createMenuItem("Quản lý tài khoản", false);
+        // 7. Quản lý tài khoản
+        JButton btnTaiKhoan = createMenuItem("Quản lý tài khoản");
         btnTaiKhoan.addActionListener(e -> {
-            // Check quyền Admin
-            if (util.Auth.isManager()) {
-                switchPanel(new FrmTaiKhoan()); // Gọi Form Tài Khoản
+            if (Auth.isManager()) {
+                setSelectedMenu(btnTaiKhoan); // <--- KÍCH HOẠT MÀU
+                switchPanel(new FrmTaiKhoan());
             } else {
-                JOptionPane.showMessageDialog(this, "Chức năng chỉ dành cho Quản lý (Admin)!");
+                JOptionPane.showMessageDialog(this, "Chức năng chỉ dành cho Admin!");
             }
         });
         pnMenu.add(btnTaiKhoan);
 
-        // [NÚT 8] ĐĂNG XUẤT
-        JButton btnLogout = createMenuItem("ĐĂNG XUẤT", false);
-        btnLogout.setForeground(new Color(255, 100, 100)); // Màu đỏ nhạt cho nổi
+        // 8. Đăng xuất (Nút này không cần Active màu nền)
+        JButton btnLogout = createMenuItem("ĐĂNG XUẤT");
+        btnLogout.setForeground(new Color(255, 100, 100));
         btnLogout.addActionListener(e -> {
-            int chon = JOptionPane.showConfirmDialog(this, "Bạn có muốn đăng xuất không?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+            int chon = JOptionPane.showConfirmDialog(this, "Đăng xuất?", "Xác nhận", JOptionPane.YES_NO_OPTION);
             if (chon == JOptionPane.YES_OPTION) {
-                util.Auth.clear(); // Xóa session
-                new FrmLogin().setVisible(true); // Về màn hình đăng nhập
-                this.dispose(); // Đóng Main
+                Auth.clear();
+                new FrmLogin().setVisible(true);
+                this.dispose();
             }
         });
         pnMenu.add(btnLogout);
-
-        pnMenu.add(Box.createVerticalStrut(20)); // Khoảng trống dưới cùng
+        pnMenu.add(Box.createVerticalStrut(20));
+        
+        // Mặc định chọn trang chủ khi mở lên
+        setSelectedMenu(btnTrangChu);
     }
     
-    // Hàm hỗ trợ chuyển đổi nội dung bên phải
-    private void switchPanel(JComponent component) {
-        pnContent.removeAll(); // Xóa cái cũ (ví dụ Sơ đồ bàn)
-        pnContent.add(component, BorderLayout.CENTER); // Add cái mới vào
-        pnContent.revalidate(); // Tính toán lại bố cục
-        pnContent.repaint(); // Vẽ lại
+    // ===== HÀM MỚI: XỬ LÝ ĐỔI MÀU MENU KHI CLICK =====
+    private void setSelectedMenu(JButton selectedBtn) {
+        // 1. Reset màu tất cả các nút về màu nền gốc
+        for (JButton btn : listMenu) {
+            btn.setBackground(COL_SIDEBAR_BG);
+        }
+        
+        // 2. Set màu nút được chọn thành màu sáng
+        selectedBtn.setBackground(COL_MENU_HOVER);
+        
+        // 3. Lưu lại nút đang active để xử lý hover
+        btnActive = selectedBtn;
     }
-    // ===== HÀM TẠO NÚT MENU (ĐÃ CHỈNH SỬA CHO GIỐNG MẪU) =====
-    private JButton createMenuItem(String text, boolean isActive) {
+
+    private void switchPanel(JComponent component) {
+        pnContent.removeAll();
+        pnContent.add(component, BorderLayout.CENTER);
+        pnContent.revalidate();
+        pnContent.repaint();
+    }
+
+    // tạo nút menu
+    private JButton createMenuItem(String text) {
         JButton btn = new JButton(text);
+        listMenu.add(btn); 
 
-        // Căn trái cho BoxLayout
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // Kích thước chuẩn
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
         btn.setPreferredSize(new Dimension(260, 48));
-
-        // Font
         btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-
-        // Màu chữ
         btn.setForeground(COL_TEXT);
-
-        // Màu nền
-        btn.setBackground(isActive ? COL_MENU_HOVER : COL_SIDEBAR_BG);
-
-        // Căn chữ trái
+        btn.setBackground(COL_SIDEBAR_BG); // Mặc định là màu tối
         btn.setHorizontalAlignment(SwingConstants.LEFT);
-
-        // 🔴 BORDER LUÔN CỐ ĐỊNH → KHÔNG LỆCH
         btn.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 0));
-
-        // Tắt toàn bộ style mặc định của JButton
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setContentAreaFilled(true);
         btn.setOpaque(true);
-
-        // Con trỏ chuột
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Hover
+        //hover
         btn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
+                // Di chuột vào thì sáng lên
                 btn.setBackground(COL_MENU_HOVER);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                if (!isActive) {
+                if (btn == btnActive) {
+                    btn.setBackground(COL_MENU_HOVER);
+                } else {
                     btn.setBackground(COL_SIDEBAR_BG);
                 }
             }
@@ -201,7 +215,6 @@ public class FrmMain extends JFrame {
         pnBan.setBackground(new Color(245, 245, 245));
         pnBan.setBorder(new EmptyBorder(30, 30, 30, 30));
 
-        // Demo dữ liệu bàn
         pnBan.add(createBanCard("Bàn 1", "Trống", COL_BAN_TRONG));
         pnBan.add(createBanCard("Bàn 2", "Có khách", COL_BAN_COKHACH));
         pnBan.add(createBanCard("Bàn 3", "Đã đặt", COL_BAN_DADAT));
@@ -226,8 +239,7 @@ public class FrmMain extends JFrame {
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
         SwingUtilities.invokeLater(() -> new FrmMain().setVisible(true));
     }
 }
