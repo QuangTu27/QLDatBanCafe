@@ -1,207 +1,278 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package view;
 
 import DAO.TaiKhoanDao;
+import Dialog.DlgTaiKhoan;
 import entity.TaiKhoan;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.Font;
+import java.awt.Image;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 
-/**
- *
- * @author Admin
- */
-public class FrmTaiKhoan extends JPanel{
-    private JTextField txtMaTK, txtTenDN, txtTenHienThi;
-    private JPasswordField txtMatKhau;
-    private JComboBox<String> cboPhanQuyen;
+public class FrmTaiKhoan extends JPanel {
+
     private JTable table;
     private DefaultTableModel model;
+    private JTextField txtTimKiem;
+    private JComboBox<String> cboLoai;
+
     private TaiKhoanDao dao = new TaiKhoanDao();
+    private List<TaiKhoan> fullList = new ArrayList<>();
 
     public FrmTaiKhoan() {
         setLayout(new BorderLayout());
-        
-        // --- PANEL NHẬP LIỆU (NORTH) ---
-        JPanel pnlInput = new JPanel(new GridLayout(3, 4, 10, 10));
-        pnlInput.setBorder(BorderFactory.createTitledBorder("Thông tin nhân viên"));
-        pnlInput.setPreferredSize(new Dimension(0, 150));
+        setBackground(Color.WHITE);
+        setPreferredSize(new Dimension(1000, 650));
 
-        pnlInput.add(new JLabel("Mã TK:"));
-        txtMaTK = new JTextField();
-        pnlInput.add(txtMaTK);
-
-        pnlInput.add(new JLabel("Tên đăng nhập:"));
-        txtTenDN = new JTextField();
-        pnlInput.add(txtTenDN);
-
-        pnlInput.add(new JLabel("Mật khẩu:"));
-        txtMatKhau = new JPasswordField();
-        pnlInput.add(txtMatKhau);
-
-        pnlInput.add(new JLabel("Tên hiển thị:"));
-        txtTenHienThi = new JTextField();
-        pnlInput.add(txtTenHienThi);
-
-        pnlInput.add(new JLabel("Vai trò:"));
-        cboPhanQuyen = new JComboBox<>(new String[]{"Nhân viên", "Quản lý (Admin)"});
-        pnlInput.add(cboPhanQuyen);
-
-        // --- PANEL NÚT BẤM (CENTER TOP) ---
-        JPanel pnlButton = new JPanel(new FlowLayout());
-        JButton btnThem = new JButton("Thêm");
-        JButton btnSua = new JButton("Sửa");
-        JButton btnXoa = new JButton("Xóa");
-        JButton btnMoi = new JButton("Làm mới");
-        
-        pnlButton.add(btnThem);
-        pnlButton.add(btnSua);
-        pnlButton.add(btnXoa);
-        pnlButton.add(btnMoi);
-
-        JPanel pnlTop = new JPanel(new BorderLayout());
-        pnlTop.add(pnlInput, BorderLayout.CENTER);
-        pnlTop.add(pnlButton, BorderLayout.SOUTH);
-        add(pnlTop, BorderLayout.NORTH);
-
-        // --- BẢNG DỮ LIỆU (CENTER) ---
-        String[] cols = {"Mã TK", "Tên Đăng Nhập", "Mật Khẩu", "Tên Hiển Thị", "Vai Trò"};
-        model = new DefaultTableModel(cols, 0);
-        table = new JTable(model);
-        add(new JScrollPane(table), BorderLayout.CENTER);
-
-        // --- LOAD DỮ LIỆU BAN ĐẦU ---
+        initToolbar();
+        initTable();
         loadTable();
-
-        // --- SỰ KIỆN CLICK BẢNG ---
-        table.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int row = table.getSelectedRow();
-                if (row >= 0) {
-                    txtMaTK.setText(model.getValueAt(row, 0).toString());
-                    txtTenDN.setText(model.getValueAt(row, 1).toString());
-                    txtMatKhau.setText(model.getValueAt(row, 2).toString());
-                    txtTenHienThi.setText(model.getValueAt(row, 3).toString());
-                    
-                    String role = model.getValueAt(row, 4).toString();
-                    cboPhanQuyen.setSelectedIndex(role.equals("Quản lý") ? 1 : 0);
-                    
-                    txtMaTK.setEditable(false); // Không cho sửa khóa chính
-                }
-            }
-        });
-
-        // --- SỰ KIỆN THÊM ---
-        btnThem.addActionListener(e -> {
-            if(validateForm()) {
-                TaiKhoan tk = getForm();
-                if (dao.selectByUsername(tk.getTenDangNhap()) != null) {
-                    JOptionPane.showMessageDialog(this, "Tên đăng nhập đã tồn tại!");
-                    return;
-                }
-                if (dao.insert(tk)) {
-                    JOptionPane.showMessageDialog(this, "Thêm thành công!");
-                    loadTable();
-                    clearForm();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Lỗi: Trùng Mã TK hoặc lỗi SQL!");
-                }
-            }
-        });
-
-        // --- SỰ KIỆN SỬA ---
-        btnSua.addActionListener(e -> {
-             if(validateForm()) {
-                if (dao.update(getForm())) {
-                    JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
-                    loadTable();
-                    clearForm();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Lỗi cập nhật!");
-                }
-             }
-        });
-
-        // --- SỰ KIỆN XÓA ---
-        btnXoa.addActionListener(e -> {
-            String ma = txtMaTK.getText();
-            if (ma.isEmpty()) return;
-            // Không cho tự xóa chính mình
-            // if (util.Auth.user.getMaTK().equals(ma)) { ... }
-            
-            int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa?");
-            if (confirm == JOptionPane.YES_OPTION) {
-                if (dao.delete(ma)) {
-                    JOptionPane.showMessageDialog(this, "Xóa thành công!");
-                    loadTable();
-                    clearForm();
-                }
-            }
-        });
-
-        // --- SỰ KIỆN LÀM MỚI ---
-        btnMoi.addActionListener(e -> clearForm());
     }
 
-    // Helper: Lấy dữ liệu từ bảng đổ vào Model
+    // Load icon 
+    private ImageIcon loadIcon(String path, int size) {
+        ImageIcon icon = new ImageIcon(getClass().getResource(path));
+        Image img = icon.getImage().getScaledInstance(size, size, Image.SCALE_FAST);
+        return new ImageIcon(img);
+    }
+
+    //  TOOLBAR
+    private void initToolbar() {
+        JPanel pnlTop = new JPanel(new BorderLayout());
+        pnlTop.setBackground(Color.WHITE);
+        pnlTop.setBorder(new EmptyBorder(10, 20, 10, 20));
+        pnlTop.setPreferredSize(new Dimension(0, 130));
+
+        // GROUP CHỨC NĂNG (BÊN TRÁI)
+        JPanel pnlChucNang = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
+        pnlChucNang.setBackground(Color.WHITE);
+        pnlChucNang.setBorder(createGroupBorder("Chức năng"));
+
+        JButton btnThem = createToolButton("Thêm", new Color(46, 204, 113), "/icons/plus.png");
+        JButton btnSua = createToolButton("Sửa", new Color(241, 196, 15), "/icons/edit.png");
+        JButton btnXoa = createToolButton("Xóa", new Color(231, 76, 60), "/icons/delete.png");
+
+        pnlChucNang.add(btnThem);
+        pnlChucNang.add(btnSua);
+        pnlChucNang.add(btnXoa);
+
+        // GROUP TÌM KIẾM (BÊN PHẢI)
+        JPanel pnlTimKiem = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        pnlTimKiem.setBackground(Color.WHITE);
+        pnlTimKiem.setBorder(createGroupBorder("Tìm kiếm"));
+
+        cboLoai = new JComboBox<>(new String[]{"Tất cả", "Tên đăng nhập", "Tên hiển thị"});
+        cboLoai.setPreferredSize(new Dimension(130, 40));
+        cboLoai.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        txtTimKiem = new JTextField();
+        txtTimKiem.setPreferredSize(new Dimension(200, 40));
+        txtTimKiem.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        JButton btnLamMoi = createToolButton("Làm mới", new Color(52, 152, 219), "/icons/refresh.png");
+
+        pnlTimKiem.add(cboLoai);
+        pnlTimKiem.add(txtTimKiem);
+        pnlTimKiem.add(btnLamMoi);
+
+        pnlTop.add(pnlChucNang, BorderLayout.WEST);
+        pnlTop.add(pnlTimKiem, BorderLayout.EAST);
+
+        add(pnlTop, BorderLayout.NORTH);
+
+        // bắt sự kiện 
+        btnThem.addActionListener(e -> themTaiKhoan());
+        btnSua.addActionListener(e -> suaTaiKhoan());
+        btnXoa.addActionListener(e -> xoaTaiKhoan());
+        btnLamMoi.addActionListener(e -> loadTable());
+
+        txtTimKiem.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                timKiem();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                timKiem();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                timKiem();
+            }
+        });
+    }
+    // hàm tạo viền có tiêu đề
+    private TitledBorder createGroupBorder(String title) {
+        TitledBorder border = BorderFactory.createTitledBorder(
+                    BorderFactory.createLineBorder(new Color(200, 200, 200), 1), 
+                    title
+        );
+        border.setTitleFont(new Font("Segoe UI", Font.BOLD, 14)); 
+        border.setTitleColor(new Color(100, 100, 100)); 
+        return border;
+    }
+
+    // button
+    private JButton createToolButton(String text, Color color, String iconPath) {
+        JButton btn = new JButton(text);
+        btn.setBackground(Color.WHITE);
+        btn.setForeground(color);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(color, 2),
+                    BorderFactory.createEmptyBorder(8, 15, 8, 15) 
+        ));
+
+        ImageIcon icon = loadIcon(iconPath, 28);
+        if (icon != null) {
+            btn.setIcon(icon);
+        }
+
+        btn.setHorizontalTextPosition(SwingConstants.RIGHT);
+        btn.setIconTextGap(10);
+
+        return btn;
+    }
+
+    // TABLE 
+    private void initTable() {
+        String[] cols = {"Mã TK", "Tên đăng nhập", "Mật khẩu", "Tên hiển thị", "Vai trò"};
+        model = new DefaultTableModel(cols, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        table = new JTable(model);
+        table.setRowHeight(40);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        table.getTableHeader().setBackground(Color.BLUE);
+        table.getTableHeader().setPreferredSize(new Dimension(0, 40));
+
+        table.setSelectionBackground(new Color(220, 235, 250));
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.getViewport().setBackground(Color.WHITE);
+        scroll.setBorder(new EmptyBorder(0, 20, 20, 20));
+        add(scroll, BorderLayout.CENTER);
+    }
+
+    // CRUD
+    private void themTaiKhoan() {
+        DlgTaiKhoan dlg = new DlgTaiKhoan(SwingUtilities.getWindowAncestor(this), null);
+        dlg.setVisible(true);
+        if (dlg.getResult()) {
+            loadTable();
+        }
+    }
+
+    private void suaTaiKhoan() {
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn tài khoản cần sửa!");
+            return;
+        }
+        TaiKhoan tk = new TaiKhoan();
+        tk.setMaTK(model.getValueAt(row, 0).toString());
+        tk.setTenDangNhap(model.getValueAt(row, 1).toString());
+        tk.setMatKhau(model.getValueAt(row, 2).toString());
+        tk.setTenHienThi(model.getValueAt(row, 3).toString());
+        tk.setPhanQuyen(model.getValueAt(row, 4).toString().equals("Quản lý") ? 1 : 0);
+
+        DlgTaiKhoan dlg = new DlgTaiKhoan(SwingUtilities.getWindowAncestor(this), tk);
+        dlg.setVisible(true);
+        if (dlg.getResult()) {
+            loadTable();
+        }
+    }
+
+    private void xoaTaiKhoan() {
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn dòng cần xóa!");
+            return;
+        }
+        String maTK = model.getValueAt(row, 0).toString();
+        if (JOptionPane.showConfirmDialog(this, "Xóa tài khoản " + maTK + "?") 
+                    == JOptionPane.YES_OPTION) {
+            dao.delete(maTK);
+            loadTable();
+        }
+    }
+
     private void loadTable() {
+        fullList = dao.selectAll();
+        hienThiDanhSach(fullList);
+    }
+
+    private void hienThiDanhSach(List<TaiKhoan> list) {
         model.setRowCount(0);
-        List<TaiKhoan> list = dao.selectAll();
         for (TaiKhoan tk : list) {
             model.addRow(new Object[]{
-                tk.getMaTK(),
-                tk.getTenDangNhap(),
-                tk.getMatKhau(),
-                tk.getTenHienThi(),
+                tk.getMaTK(), tk.getTenDangNhap(), tk.getMatKhau(), tk.getTenHienThi(),
                 tk.getPhanQuyen() == 1 ? "Quản lý" : "Nhân viên"
             });
         }
     }
 
-    // Helper: Lấy dữ liệu từ Form
-    private TaiKhoan getForm() {
-        String ma = txtMaTK.getText();
-        String user = txtTenDN.getText();
-        String pass = new String(txtMatKhau.getPassword());
-        String ten = txtTenHienThi.getText();
-        int role = cboPhanQuyen.getSelectedIndex(); // 0: NV, 1: Admin
-        return new TaiKhoan(ma, user, pass, ten, role);
-    }
-    
-    // Helper: Validate
-    private boolean validateForm() {
-        if (txtMaTK.getText().isEmpty() || txtTenDN.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!");
-            return false;
+    private void timKiem() {
+        String keyword = txtTimKiem.getText().trim().toLowerCase();
+        int loai = cboLoai.getSelectedIndex();
+        if (keyword.isEmpty()) {
+            hienThiDanhSach(fullList);
+            return;
         }
-        return true;
-    }
 
-    private void clearForm() {
-        txtMaTK.setText("");
-        txtTenDN.setText("");
-        txtMatKhau.setText("");
-        txtTenHienThi.setText("");
-        cboPhanQuyen.setSelectedIndex(0);
-        txtMaTK.setEditable(true); // Cho nhập lại khóa chính
+        List<TaiKhoan> ketQua = new ArrayList<>();
+        for (TaiKhoan tk : fullList) {
+            boolean match = false;
+            switch (loai) {
+                case 0:
+                    match = tk.getMaTK().toLowerCase().contains(keyword) 
+                                || tk.getTenDangNhap().toLowerCase().contains(keyword) 
+                                || tk.getTenHienThi().toLowerCase().contains(keyword);
+                    break;
+                case 1:
+                    match = tk.getTenDangNhap().toLowerCase().contains(keyword);
+                    break;
+                case 2:
+                    match = tk.getTenHienThi().toLowerCase().contains(keyword);
+                    break;
+            }
+            if (match) {
+                ketQua.add(tk);
+            }
+        }
+        hienThiDanhSach(ketQua);
     }
 }
