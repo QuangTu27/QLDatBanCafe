@@ -30,7 +30,8 @@ CREATE TABLE tbl_Menu (
     MaMenu CHAR(10) PRIMARY KEY NOT NULL,
     TenMon NVARCHAR(100) NOT NULL,
     DonGia DECIMAL(10,2) NOT NULL,
-	LoaiMon NVARCHAR(50) DEFAULT N'Đồ uống' --: Cafe, Sinh tố, Bánh ngọt... (Để lọc trên menu cho nhanh)
+	LoaiMon NVARCHAR(50) DEFAULT N'Đồ uống', --: Cafe, Sinh tố, Bánh ngọt... (Để lọc trên menu cho nhanh)
+	HinhAnh Nvarchar(225)
 );
 
 CREATE TABLE tbl_DatBan (

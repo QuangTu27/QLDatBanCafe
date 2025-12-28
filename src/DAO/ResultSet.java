@@ -4,18 +4,10 @@
  */
 package DAO;
 
-import com.mysql.jdbc.Connection;
-import connect.MyConnection;
-import entity.Ban;
-import static java.util.Collections.list;
-import java.util.List;
-
 /**
  *
- * @author Admin
+ * @author pc
  */
-public class BanDao {
-    
-     
+class ResultSet {
     
 }

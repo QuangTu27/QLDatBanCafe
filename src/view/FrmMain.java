@@ -100,7 +100,12 @@ public class FrmMain extends JFrame {
 
         // [NÚT 3,4,5,6] CÁC CHỨC NĂNG CỦA THÀNH VIÊN KHÁC (Để tạm)
         pnMenu.add(createMenuItem("Quản lý bàn", false));      // Của Thảo
-        pnMenu.add(createMenuItem("Quản lý Menu", false));     // Của Thảo
+     
+        JButton btnMenu = createMenuItem("Quản lý Menu", false);
+        btnMenu.addActionListener(e -> {
+            switchPanel(new FrmMenu()); // Gọi Form Menu
+        });
+        pnMenu.add(btnMenu);// Của Thảo
         pnMenu.add(createMenuItem("Quản lý đặt bàn", false));  // Của Minh
         pnMenu.add(createMenuItem("Thống kê và Hoá đơn", false)); // Của Đăng
 
@@ -135,7 +140,7 @@ public class FrmMain extends JFrame {
 
         pnMenu.add(Box.createVerticalStrut(20)); // Khoảng trống dưới cùng
     }
-    
+
     // Hàm hỗ trợ chuyển đổi nội dung bên phải
     private void switchPanel(JComponent component) {
         pnContent.removeAll(); // Xóa cái cũ (ví dụ Sơ đồ bàn)
@@ -143,6 +148,7 @@ public class FrmMain extends JFrame {
         pnContent.revalidate(); // Tính toán lại bố cục
         pnContent.repaint(); // Vẽ lại
     }
+
     // ===== HÀM TẠO NÚT MENU (ĐÃ CHỈNH SỬA CHO GIỐNG MẪU) =====
     private JButton createMenuItem(String text, boolean isActive) {
         JButton btn = new JButton(text);
