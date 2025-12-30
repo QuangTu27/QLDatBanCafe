@@ -201,4 +201,29 @@ public class ChiTietDatBanDAO {
         }
         return maMoi;
     }
+    // 6. LẤY DANH SÁCH CÁC MÃ ĐẶT BÀN ĐANG CÓ MÓN (Để tô màu bàn)
+    public List<String> getDanhSachMaDatBanCoMon() {
+        List<String> listMa = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            MyConnection myCon = new MyConnection();
+            conn = myCon.getInstance();
+            
+            // Lấy duy nhất (DISTINCT) các mã đặt bàn đang tồn tại trong bảng chi tiết
+            String sql = "SELECT DISTINCT MaDatBan FROM tbl_ChiTietDatBan";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                listMa.add(rs.getString("MaDatBan"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(stmt, rs);
+        }
+        return listMa;
+    }
 }

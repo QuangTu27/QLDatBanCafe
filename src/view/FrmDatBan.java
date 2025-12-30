@@ -2,17 +2,20 @@ package view;
 
 import entity.ChiTietDatBan;
 import DAO.ChiTietDatBanDAO;
-import util.XImage; // Đảm bảo đã có class này từ bài trước
+import util.XImage;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.NumberFormat;
-import java.text.ParseException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class FrmDatBan extends JFrame {
 
@@ -22,36 +25,60 @@ public class FrmDatBan extends JFrame {
     private JTextField txtTenMon, txtGia, txtMaMenu;
     private JSpinner spnSoLuong;
     
+    // --- KHAI BÁO CÁC COMPONENT GIAO DIỆN ---
+    private JPanel pnlSoDoBan; // Panel chứa các nút bàn
+    private JButton selectedBtnBan = null; // Lưu nút bàn đang chọn để đổi màu
+    
+    // --- QUAN TRỌNG: DANH SÁCH LƯU TRẠNG THÁI ĐÃ THANH TOÁN ---
+    private Set<String> listBanDaThanhToan = new HashSet<>();
+    // ----------------------------------------------------------
+
     private JButton btnThem, btnThanhToan, btnXoa, btnCapNhat;
 
     private JTable tblGioHang;
     private DefaultTableModel tableModel;
     private JLabel lblTongTien;
+    private JPanel pnlLeft;
 
     private ChiTietDatBanDAO dao;
     private NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
     
+    // Mặc định chọn bàn 1 khi mở lên
     private String currentMaDatBan = "DB001"; 
 
     public FrmDatBan() {
         dao = new ChiTietDatBanDAO();
         initComponents();
         loadDataToMenu();
-        loadDataToTable();
-        addEvents();
+        
+        // Load mặc định bàn 1
+        loadDataToTable(); 
     }
 
     private void initComponents() {
         setTitle("Quản Lý Đặt Bàn - Quán Cafe");
-        setSize(1200, 700);
+        setSize(1250, 750); 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new GridLayout(1, 2, 10, 10));
 
-        // --- PANEL TRÁI ---
-        JPanel pnlLeft = new JPanel(new BorderLayout());
-        pnlLeft.setBorder(BorderFactory.createTitledBorder("Danh Sách Đặt Bàn"));
+        // ==============================================================================
+        // --- PANEL TRÁI: CHỨA SƠ ĐỒ BÀN + BẢNG ODER ---
+        // ==============================================================================
+        pnlLeft = new JPanel(new BorderLayout(5, 5));
+        pnlLeft.setBorder(BorderFactory.createTitledBorder("Khu Vực Bàn & Gọi Món"));
 
+        // 1. KHỞI TẠO SƠ ĐỒ BÀN (NORTH)
+        pnlSoDoBan = new JPanel(new GridLayout(2, 5, 10, 10)); 
+        pnlSoDoBan.setBorder(BorderFactory.createEmptyBorder(5, 5, 10, 5));
+        pnlSoDoBan.setPreferredSize(new Dimension(0, 220)); 
+        
+        // Gọi hàm tạo nút bàn
+        initListTables(); 
+        
+        pnlLeft.add(pnlSoDoBan, BorderLayout.NORTH);
+
+        // 2. BẢNG GIỎ HÀNG (CENTER)
         String[] headers = {"Mã CT", "Mã Đặt Bàn", "Mã Menu", "Số Lượng", "Đơn Giá"};
         tableModel = new DefaultTableModel(headers, 0) {
             @Override
@@ -62,14 +89,17 @@ public class FrmDatBan extends JFrame {
         tblGioHang.setRowHeight(30);
         tblGioHang.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
-        tblGioHang.getColumnModel().getColumn(0).setPreferredWidth(80);  
-        tblGioHang.getColumnModel().getColumn(1).setPreferredWidth(80);  
-        tblGioHang.getColumnModel().getColumn(2).setPreferredWidth(80);  
-        tblGioHang.getColumnModel().getColumn(3).setPreferredWidth(60);  
-        tblGioHang.getColumnModel().getColumn(4).setPreferredWidth(100); 
+        tblGioHang.getColumnModel().getColumn(0).setPreferredWidth(60);  
+        tblGioHang.getColumnModel().getColumn(1).setPreferredWidth(60);  
+        tblGioHang.getColumnModel().getColumn(2).setPreferredWidth(60);  
+        tblGioHang.getColumnModel().getColumn(3).setPreferredWidth(50);  
+        tblGioHang.getColumnModel().getColumn(4).setPreferredWidth(90); 
 
-        pnlLeft.add(new JScrollPane(tblGioHang), BorderLayout.CENTER);
+        JScrollPane scrTable = new JScrollPane(tblGioHang);
+        scrTable.setBorder(BorderFactory.createTitledBorder("Chi tiết món ăn của bàn"));
+        pnlLeft.add(scrTable, BorderLayout.CENTER);
 
+        // 3. FOOTER TRÁI (SOUTH)
         JPanel pnlFooterLeft = new JPanel(new GridLayout(2, 1));
         JPanel pnlButtonsLeft = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btnXoa = new JButton("Xóa Món");
@@ -79,6 +109,7 @@ public class FrmDatBan extends JFrame {
         JPanel pnlThanhToan = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         lblTongTien = new JLabel("Tổng tiền: 0 ₫");
         lblTongTien.setFont(new Font("Arial", Font.BOLD, 18));
+        lblTongTien.setForeground(Color.BLUE);
         
         btnThanhToan = new JButton("THANH TOÁN / LƯU");
         btnThanhToan.setFont(new Font("Arial", Font.BOLD, 14));
@@ -92,18 +123,17 @@ public class FrmDatBan extends JFrame {
         pnlFooterLeft.add(pnlThanhToan);
         pnlLeft.add(pnlFooterLeft, BorderLayout.SOUTH);
 
-        // --- PANEL PHẢI: MENU (CÓ ẢNH TRONG LIST) ---
+        // ==============================================================================
+        // --- PANEL PHẢI: MENU ---
+        // ==============================================================================
         JPanel pnlRight = new JPanel(new BorderLayout());
-        pnlRight.setBorder(BorderFactory.createTitledBorder("Danh Sách Thực Đơn"));
+        pnlRight.setBorder(BorderFactory.createTitledBorder("Danh Sách Món"));
 
         listModel = new DefaultListModel<>();
         listMenu = new JList<>(listModel);
-        
-        // --- CẤU HÌNH HIỂN THỊ ẢNH TRONG JLIST ---
-        listMenu.setCellRenderer(new MenuRenderer()); // Gắn bộ vẽ tùy chỉnh
-        listMenu.setFixedCellHeight(80);              // Tăng chiều cao dòng để vừa ảnh
+        listMenu.setCellRenderer(new MenuRenderer()); 
+        listMenu.setFixedCellHeight(80);              
         listMenu.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        // ------------------------------------------
         
         pnlRight.add(new JScrollPane(listMenu), BorderLayout.CENTER);
 
@@ -118,7 +148,8 @@ public class FrmDatBan extends JFrame {
         spnSoLuong = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
         
         btnThem = new JButton("THÊM MÓN");
-        btnCapNhat = new JButton("CẬP NHẬT SL"); btnCapNhat.setBackground(Color.ORANGE);
+        btnThem.setBackground(new Color(51, 153, 255)); btnThem.setForeground(Color.BLACK);
+        btnCapNhat = new JButton("CẬP NHẬT SL"); btnCapNhat.setBackground(Color.BLACK);
 
         gbc.gridx=0; gbc.gridy=0; pnlChiTiet.add(new JLabel("Mã Món:"), gbc);
         gbc.gridx=1; gbc.gridy=0; pnlChiTiet.add(txtMaMenu, gbc);
@@ -143,6 +174,102 @@ public class FrmDatBan extends JFrame {
 
         add(pnlLeft);
         add(pnlRight);
+        
+        addEvents();
+    }
+
+    // --- HÀM TẠO SƠ ĐỒ BÀN (Đã cập nhật logic dấu tích) ---
+    private void initListTables() {
+        pnlSoDoBan.removeAll();
+        
+        List<String> listBanCoKhach = dao.getDanhSachMaDatBanCoMon();
+
+        for (int i = 1; i <= 10; i++) {
+            String maBan = String.format("DB%03d", i); 
+            String tenBan = "Bàn " + i;
+
+            JButton btnBan = new JButton();
+            
+            // Icon bàn (Bạn nhớ đổi tên file ảnh cho đúng với file bạn có trong src/image)
+            ImageIcon icon = XImage.getResizedIcon("logo_cafe.png", 50, 50);
+            if(icon != null) btnBan.setIcon(icon);
+            
+            btnBan.setVerticalTextPosition(SwingConstants.BOTTOM);
+            btnBan.setHorizontalTextPosition(SwingConstants.CENTER);
+            btnBan.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            // =================================================================
+            // --- LOGIC MỚI: XỬ LÝ TRẠNG THÁI & DẤU TÍCH ---
+            // =================================================================
+            boolean isCoKhach = listBanCoKhach.contains(maBan);
+            boolean isDaThanhToan = listBanDaThanhToan.contains(maBan);
+
+            if (isCoKhach) {
+                if (isDaThanhToan) {
+                    // TRƯỜNG HỢP 1: Có khách + Đã thanh toán -> Xanh lá + Dấu tích
+                    btnBan.setBackground(new Color(144, 238, 144)); 
+                    btnBan.setText("<html><center>" + tenBan + "<br>"
+                            + "<b style='color:#006400; font-size:14px;'>Đã TT &#10004;</b>" 
+                            + "</center></html>");
+                } else {
+                    // TRƯỜNG HỢP 2: Có khách + Chưa thanh toán -> Hồng
+                    btnBan.setBackground(new Color(255, 182, 193)); 
+                    btnBan.setText("<html><center>" + tenBan + "<br>"
+                            + "<b style='color:red'>(Có khách)</b>"
+                            + "</center></html>");
+                }
+            } else {
+                // TRƯỜNG HỢP 3: Bàn trống -> Trắng
+                // Nếu bàn trống thì xóa luôn trạng thái thanh toán (để đón khách mới)
+                listBanDaThanhToan.remove(maBan); 
+                
+                btnBan.setBackground(Color.WHITE);
+                btnBan.setText("<html><center>" + tenBan + "<br>"
+                        + "<i style='color:green'>(Trống)</i>"
+                        + "</center></html>");
+            }
+            // =================================================================
+
+            // Sự kiện bấm vào bàn
+            btnBan.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // Khi bấm vào thì chỉ load dữ liệu, màu sắc để initListTables lo
+                    currentMaDatBan = maBan;
+                    loadDataToTable();
+                    
+                    String trangThaiText = isDaThanhToan ? " (Đã TT)" : "";
+                    ((javax.swing.border.TitledBorder)((JScrollPane)tblGioHang.getParent().getParent()).getBorder())
+                            .setTitle("Chi tiết món ăn - " + tenBan + " (" + maBan + ")" + trangThaiText);
+                    
+                    // Để làm nổi bật nút đang chọn, ta có thể set tạm màu xanh dương
+                    // (Lưu ý: khi initListTables chạy lại, màu này sẽ mất, nhưng không sao)
+                    resetMauCacBanKhac();
+                    btnBan.setBackground(new Color(173, 216, 230));
+                    selectedBtnBan = btnBan;
+                    
+                    pnlLeft.repaint();
+                }
+            });
+            
+            // Mặc định select bàn 1 nếu mới mở
+            if (i == 1 && selectedBtnBan == null) {
+                selectedBtnBan = btnBan;
+                btnBan.setBackground(new Color(173, 216, 230));
+            }
+
+            pnlSoDoBan.add(btnBan);
+        }
+        
+        pnlSoDoBan.revalidate();
+        pnlSoDoBan.repaint();
+    }
+    
+    // Hàm phụ để reset màu nền các nút về trạng thái gốc (tránh lỗi hiển thị khi click)
+    private void resetMauCacBanKhac() {
+        // Thực tế hàm initListTables đã vẽ lại màu rất chuẩn rồi.
+        // Nhưng nếu muốn đổi màu tức thì khi click thì gọi lại initListTables() là an toàn nhất.
+        initListTables();
     }
 
     private void loadDataToMenu() {
@@ -158,6 +285,7 @@ public class FrmDatBan extends JFrame {
     private void loadDataToTable() {
         tableModel.setRowCount(0);
         List<ChiTietDatBan> listOrder = dao.getChiTietByMaDatBan(currentMaDatBan);
+        
         if (listOrder != null) {
             for (ChiTietDatBan ct : listOrder) {
                 tableModel.addRow(new Object[]{
@@ -173,11 +301,11 @@ public class FrmDatBan extends JFrame {
         double total = 0;
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             try {
-                int sl = (int) tableModel.getValueAt(i, 3);
+                int sl = Integer.parseInt(tableModel.getValueAt(i, 3).toString());
                 String donGiaStr = tableModel.getValueAt(i, 4).toString();
                 Number donGiaNum = currencyFormat.parse(donGiaStr);
                 total += sl * donGiaNum.doubleValue();
-            } catch (ParseException e) {}
+            } catch (Exception e) {}
         }
         lblTongTien.setText("Tổng tiền: " + currencyFormat.format(total));
     }
@@ -191,7 +319,7 @@ public class FrmDatBan extends JFrame {
     }
 
     private void addEvents() {
-        // Event click bảng
+        // Event click bảng giỏ hàng
         tblGioHang.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -206,7 +334,7 @@ public class FrmDatBan extends JFrame {
             }
         });
 
-        // Event click List (Để hiện thông tin xuống form)
+        // Event click List Menu
         listMenu.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -225,7 +353,7 @@ public class FrmDatBan extends JFrame {
         btnThem.addActionListener(e -> {
             ChiTietDatBan selectedItem = listMenu.getSelectedValue();
             if (selectedItem == null) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn món ăn từ thực đơn!");
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn món ăn từ thực đơn bên phải!");
                 return;
             }
             int soLuongThem = (int) spnSoLuong.getValue();
@@ -235,7 +363,7 @@ public class FrmDatBan extends JFrame {
             boolean found = false;
             for (int i = 0; i < tableModel.getRowCount(); i++) {
                 if (tableModel.getValueAt(i, 2).equals(maMon)) { 
-                    JOptionPane.showMessageDialog(this, "Món này đã có! Hãy dùng nút Cập Nhật.");
+                    JOptionPane.showMessageDialog(this, "Món này đã có trong bàn " + currentMaDatBan + "! Hãy dùng nút Cập Nhật.");
                     found = true;
                     tblGioHang.setRowSelectionInterval(i, i);
                     break;
@@ -245,8 +373,8 @@ public class FrmDatBan extends JFrame {
             if (!found) {
                 ChiTietDatBan ctdb = new ChiTietDatBan(maCTMoi, currentMaDatBan, maMon, selectedItem.getTenMon(), soLuongThem, selectedItem.getDonGia());
                 if(dao.insertChiTiet(ctdb)) {
-                    tableModel.addRow(new Object[]{ maCTMoi, currentMaDatBan, maMon, soLuongThem, currencyFormat.format(selectedItem.getDonGia()) });
-                    updateTongTien();
+                    loadDataToTable(); 
+                    initListTables(); // Cập nhật màu bàn ngay khi thêm món
                 }
             }
         });
@@ -255,12 +383,13 @@ public class FrmDatBan extends JFrame {
         btnCapNhat.addActionListener(e -> {
             int row = tblGioHang.getSelectedRow();
             if (row == -1) {
-                JOptionPane.showMessageDialog(this, "Chọn món trong bảng bên trái để cập nhật!");
+                JOptionPane.showMessageDialog(this, "Chọn món trong giỏ hàng (bên trái) để cập nhật!");
                 return;
             }
-            if (dao.updateSoLuong(tableModel.getValueAt(row, 0).toString(), (int) spnSoLuong.getValue())) {
-                tableModel.setValueAt(spnSoLuong.getValue(), row, 3);
-                updateTongTien();
+            String maCT = tableModel.getValueAt(row, 0).toString();
+            if (dao.updateSoLuong(maCT, (int) spnSoLuong.getValue())) {
+                loadDataToTable();
+                JOptionPane.showMessageDialog(this, "Đã cập nhật số lượng!");
             }
         });
 
@@ -268,18 +397,39 @@ public class FrmDatBan extends JFrame {
         btnXoa.addActionListener(e -> {
             int row = tblGioHang.getSelectedRow();
             if (row != -1) {
-                if(dao.deleteChiTiet(tableModel.getValueAt(row, 0).toString())) {
-                    tableModel.removeRow(row);
-                    updateTongTien();
+                int confirm = JOptionPane.showConfirmDialog(this, "Bạn muốn xóa món này khỏi bàn " + currentMaDatBan + "?");
+                if (confirm == JOptionPane.YES_OPTION) {
+                    if(dao.deleteChiTiet(tableModel.getValueAt(row, 0).toString())) {
+                        loadDataToTable();
+                        initListTables(); // Cập nhật lại màu bàn (nếu xóa hết món thì về màu trắng)
+                    }
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Chọn món để xóa!");
             }
         });
 
+        // Event Thanh Toán (Đã sửa logic)
         btnThanhToan.addActionListener(e -> {
-            loadDataToTable();
-            JOptionPane.showMessageDialog(this, "Đã tải lại dữ liệu!");
+            // Kiểm tra bàn trống
+            if (tableModel.getRowCount() == 0) {
+                JOptionPane.showMessageDialog(this, "Bàn này đang trống, không thể thanh toán!");
+                return;
+            }
+
+            int confirm = JOptionPane.showConfirmDialog(this, 
+                    "Xác nhận thanh toán cho " + currentMaDatBan + "?\nTổng tiền: " + lblTongTien.getText(),
+                    "Thanh Toán", JOptionPane.YES_NO_OPTION);
+            
+            if (confirm == JOptionPane.YES_OPTION) {
+                // 1. Thêm bàn hiện tại vào danh sách "Đã thanh toán"
+                listBanDaThanhToan.add(currentMaDatBan);
+                
+                // 2. Load lại sơ đồ bàn để nó hiện dấu tích lên
+                initListTables();
+                
+                JOptionPane.showMessageDialog(this, "Đã ghi nhận thanh toán! Bàn hiện dấu tích xanh.");
+            }
         });
     }
 
@@ -290,7 +440,6 @@ public class FrmDatBan extends JFrame {
 }
 
 // --- CLASS VẼ GIAO DIỆN CHO JLIST (Renderer) ---
-// Class này chịu trách nhiệm hiển thị Ảnh và Chữ trong List
 class MenuRenderer extends DefaultListCellRenderer {
     @Override
     public Component getListCellRendererComponent(
@@ -302,25 +451,27 @@ class MenuRenderer extends DefaultListCellRenderer {
         if (value instanceof ChiTietDatBan) {
             ChiTietDatBan item = (ChiTietDatBan) value;
             
-            // Format tiền
             java.text.NumberFormat vnMoney = java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("vi", "VN"));
             
-            // Tạo chữ dạng HTML để có thể xuống dòng và định dạng đậm nhạt
             String html = "<html><div style='padding: 5px;'>"
                         + "<b style='font-size:12px; color:blue;'>" + item.getTenMon() + "</b><br/>" 
                         + "<i style='color:red;'>" + vnMoney.format(item.getDonGia()) + "</i>"
                         + "</div></html>";
             setText(html);
 
-            // Tìm và gắn ảnh
-            // Quy ước: Ảnh phải có tên trùng với Mã Menu (ví dụ MN001.png) và nằm trong thư mục icons
             String imgName = item.getMaMenu() + ".png";
-            
-            // Resize ảnh về 60x60
             setIcon(XImage.getResizedIcon(imgName, 60, 60)); 
             
-            setIconTextGap(15); // Khoảng cách giữa ảnh và chữ
-            setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY)); // Đường kẻ mờ ngăn cách
+            setIconTextGap(15);
+            setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+            
+            if (isSelected) {
+                setBackground(new Color(200, 230, 255));
+                setForeground(Color.BLACK);
+            } else {
+                setBackground(Color.WHITE);
+                setForeground(Color.BLACK);
+            }
         }
         return this;
     }
