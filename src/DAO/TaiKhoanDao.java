@@ -22,8 +22,8 @@ public class TaiKhoanDao {
         List<TaiKhoan> list = new ArrayList<>();
         String sql = "SELECT * FROM tbl_TaiKhoan";
         
-        MyConnection myConn = new MyConnection(); // Tạo đối tượng kết nối
-        Connection conn = myConn.getInstance();   // Mở kết nối
+        MyConnection myConn = new MyConnection(); 
+        Connection conn = myConn.getInstance();
         
         if (conn != null) {
             try (PreparedStatement ps = conn.prepareStatement(sql);
@@ -116,7 +116,7 @@ public class TaiKhoanDao {
         return false;
     }
     
-    // Tìm kiếm theo Username (Dùng cho Login)
+    // Tìm kiếm theo Username 
     public TaiKhoan selectByUsername(String username) {
         String sql = "SELECT * FROM tbl_TaiKhoan WHERE TenDangNhap=?";
         

@@ -1,35 +1,17 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Dialog;
 
 import DAO.KhachHangDao;
 import entity.KhachHang;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dialog.ModalityType;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.Window;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.*;
 
-/**
- *
- * @author Admin
- */
 public class DlgKhachHang extends JDialog {
+
     private JTextField txtMaKH, txtTenKH, txtSDT, txtEmail;
     private JButton btnLuu, btnHuy;
-    
+
     private KhachHangDao dao = new KhachHangDao();
     private KhachHang khEditing = null;
     private boolean result = false;
@@ -37,107 +19,171 @@ public class DlgKhachHang extends JDialog {
     public DlgKhachHang(Window parent, KhachHang kh) {
         super(parent, ModalityType.APPLICATION_MODAL);
         this.khEditing = kh;
-        
+
         initComponents();
-        
+
         if (kh != null) {
-            setTitle("Cập nhật khách hàng");
             txtMaKH.setText(kh.getMaKhachHang());
             txtMaKH.setEditable(false);
             txtTenKH.setText(kh.getTenKhachHang());
             txtSDT.setText(kh.getSoDienThoai());
             txtEmail.setText(kh.getEmail());
             btnLuu.setText("Cập nhật");
-        } else {
-            setTitle("Thêm khách hàng mới");
         }
-        
         setLocationRelativeTo(parent);
     }
-    
-    public boolean getResult() { return result; }
 
     private void initComponents() {
-        setSize(400, 350);
+        setSize(500, 450);
         setLayout(new BorderLayout());
-        
-        // Header Xanh
+
+        // HEADER 
         JPanel pnlHeader = new JPanel();
         pnlHeader.setBackground(new Color(46, 204, 113));
-        pnlHeader.setPreferredSize(new Dimension(0, 50));
+        pnlHeader.setPreferredSize(new Dimension(0, 30));
         JLabel lblTitle = new JLabel(khEditing == null ? "THÊM KHÁCH HÀNG" : "CẬP NHẬT KHÁCH HÀNG");
         lblTitle.setForeground(Color.WHITE);
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
         pnlHeader.add(lblTitle);
         add(pnlHeader, BorderLayout.NORTH);
-        
-        // Form nhập liệu
-        JPanel pnlForm = new JPanel(new GridLayout(4, 2, 10, 20)); // 4 dòng
-        pnlForm.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        
-        pnlForm.add(new JLabel("Mã khách hàng:"));
+
+        // FORM NHẬP 
+        JPanel pnlForm = new JPanel(new GridLayout(4, 2, 15, 25));
+        pnlForm.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+
+        Font labelFont = new Font("Segoe UI", Font.PLAIN, 15);
+
+        JLabel lblMa = new JLabel("Mã Khách hàng:");
+        lblMa.setFont(labelFont);
+        pnlForm.add(lblMa);
         txtMaKH = new JTextField();
+        txtMaKH.setFont(labelFont);
         pnlForm.add(txtMaKH);
-        
-        pnlForm.add(new JLabel("Tên khách hàng:"));
+
+        JLabel lblTenKH = new JLabel("Tên Khách hàng:");
+        lblTenKH.setFont(labelFont);
+        pnlForm.add(lblTenKH);
         txtTenKH = new JTextField();
+        txtTenKH.setFont(labelFont);
         pnlForm.add(txtTenKH);
-        
-        pnlForm.add(new JLabel("Số điện thoại:"));
+
+        JLabel lblSDT = new JLabel("Số điện thoại:");
+        lblSDT.setFont(labelFont);
+        pnlForm.add(lblSDT);
         txtSDT = new JTextField();
+        txtSDT.setFont(labelFont);
         pnlForm.add(txtSDT);
-        
-        pnlForm.add(new JLabel("Email:"));
+
+        JLabel lblEmail = new JLabel("Email:");
+        lblEmail.setFont(labelFont);
+        pnlForm.add(lblEmail);
         txtEmail = new JTextField();
+        txtEmail.setFont(labelFont);
         pnlForm.add(txtEmail);
-        
+
         add(pnlForm, BorderLayout.CENTER);
-        
-        // Buttons
-        JPanel pnlButton = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        
-        btnLuu = new JButton("Lưu");
-        btnLuu.setBackground(new Color(46, 204, 113));
-        btnLuu.setForeground(Color.WHITE);
-        
-        btnHuy = new JButton("Hủy");
-        btnHuy.setBackground(new Color(231, 76, 60));
-        btnHuy.setForeground(Color.WHITE);
-        
+
+        // buttons
+        JPanel pnlButton = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 20));
+
+        btnLuu = createToolButton("Lưu", new Color(46, 204, 113));
+        btnHuy = createToolButton("Hủy", new Color(231, 76, 60));
+
         pnlButton.add(btnLuu);
         pnlButton.add(btnHuy);
         add(pnlButton, BorderLayout.SOUTH);
-        
-        // Events
+
         btnHuy.addActionListener(e -> dispose());
-        
-        btnLuu.addActionListener(e -> {
-            if (txtMaKH.getText().isEmpty() || txtTenKH.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập Mã và Tên khách!");
-                return;
+        btnLuu.addActionListener(e -> xuLyLuu());
+    }
+
+    // Hàm tạo Button
+    private JButton createToolButton(String text, Color color) {
+        JButton btn = new JButton(text);
+        btn.setBackground(Color.WHITE);
+        btn.setForeground(color);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setContentAreaFilled(false);
+        btn.setOpaque(true);
+
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(color, 2),
+                    BorderFactory.createEmptyBorder(10, 30, 10, 30)
+        ));
+
+        // Hiệu ứng Hover: Rê chuột đổi màu nền
+        btn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(color);
+                btn.setForeground(Color.WHITE);
             }
-            
-            KhachHang khMoi = new KhachHang(
-                txtMaKH.getText(), 
-                txtTenKH.getText(), 
-                txtSDT.getText(), 
-                txtEmail.getText()
-            );
-            
-            boolean thanhCong;
-            if (khEditing == null) {
-                thanhCong = dao.insert(khMoi);
-            } else {
-                thanhCong = dao.update(khMoi);
-            }
-            
-            if (thanhCong) {
-                JOptionPane.showMessageDialog(this, "Lưu thành công!");
-                result = true;
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Lỗi: Trùng mã hoặc lỗi CSDL!");
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(Color.WHITE);
+                btn.setForeground(color);
             }
         });
+
+        return btn;
+    }
+
+    private void xuLyLuu() {
+        if (!validateForm()) {
+            return;
+        }
+
+        KhachHang khMoi = new KhachHang(
+                    txtMaKH.getText().trim(),
+                    txtTenKH.getText().trim(),
+                    txtSDT.getText().trim(),
+                    txtEmail.getText().trim()
+        );
+
+        boolean thanhCong = (khEditing == null) ? dao.insert(khMoi) : dao.update(khMoi);
+
+        if (thanhCong) {
+            JOptionPane.showMessageDialog(this, "Lưu dữ liệu thành công!");
+            result = true;
+            dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, "Lỗi: Trùng mã hoặc lỗi cơ sở dữ liệu!");
+        }
+    }
+
+    private boolean validateForm() {
+        String ma = txtMaKH.getText().trim();
+        String ten = txtTenKH.getText().trim();
+        String sdt = txtSDT.getText().trim();
+
+        // 1. Kiểm tra không được để trống các trường bắt buộc
+        if (ma.isEmpty() || ten.isEmpty() || sdt.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Mã, Tên và Số điện thoại!");
+            return false;
+        }
+
+        // 2. Kiểm tra SĐT phải là số và có độ dài từ 10 chữ số
+        if (!sdt.matches("^[0-9]{10}$")) {
+            JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ (phải là số và có 10 chữ số)!");
+            txtSDT.requestFocus();
+            return false;
+        }
+
+        // 3. Kiểm tra Email (nếu có nhập thì phải đúng định dạng)
+        String email = txtEmail.getText().trim();
+        if (!email.isEmpty() && !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            JOptionPane.showMessageDialog(this, "Định dạng Email không hợp lệ!");
+            txtEmail.requestFocus();
+            return false;
+        }
+
+        return true;
+    }
+    
+    public boolean getResult() {
+        return result;
     }
 }
