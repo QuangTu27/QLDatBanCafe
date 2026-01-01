@@ -36,6 +36,8 @@ public class FrmTaiKhoan extends JPanel {
     private DefaultTableModel model;
     private JTextField txtTimKiem;
     private JComboBox<String> cboLoai;
+    private JButton btnThem, btnSua, btnXoa, btnLamMoi;
+    private JPanel pnlTimKiem;
 
     private TaiKhoanDao dao = new TaiKhoanDao();
     private List<TaiKhoan> fullList = new ArrayList<>();
@@ -48,37 +50,30 @@ public class FrmTaiKhoan extends JPanel {
         initToolbar();
         initTable();
         loadTable();
+        addEvents();
     }
 
-    // Load icon 
-    private ImageIcon loadIcon(String path, int size) {
-        ImageIcon icon = new ImageIcon(getClass().getResource(path));
-        Image img = icon.getImage().getScaledInstance(size, size, Image.SCALE_FAST);
-        return new ImageIcon(img);
-    }
-
-    //  TOOLBAR
     private void initToolbar() {
         JPanel pnlTop = new JPanel(new BorderLayout());
         pnlTop.setBackground(Color.WHITE);
         pnlTop.setBorder(new EmptyBorder(10, 20, 10, 20));
         pnlTop.setPreferredSize(new Dimension(0, 130));
 
-        // GROUP CHỨC NĂNG (BÊN TRÁI)
+        // chức năng 
         JPanel pnlChucNang = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
         pnlChucNang.setBackground(Color.WHITE);
         pnlChucNang.setBorder(createGroupBorder("Chức năng"));
 
-        JButton btnThem = createToolButton("Thêm", new Color(46, 204, 113), "/icons/plus.png");
-        JButton btnSua = createToolButton("Sửa", new Color(241, 196, 15), "/icons/edit.png");
-        JButton btnXoa = createToolButton("Xóa", new Color(231, 76, 60), "/icons/delete.png");
+        btnThem = createToolButton("Thêm", new Color(46, 204, 113), "/icons/plus.png");
+        btnSua = createToolButton("Sửa", new Color(241, 196, 15), "/icons/edit.png");
+        btnXoa = createToolButton("Xóa", new Color(231, 76, 60), "/icons/delete.png");
 
         pnlChucNang.add(btnThem);
         pnlChucNang.add(btnSua);
         pnlChucNang.add(btnXoa);
 
-        // GROUP TÌM KIẾM (BÊN PHẢI)
-        JPanel pnlTimKiem = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        // tìm kiếm
+        pnlTimKiem = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         pnlTimKiem.setBackground(Color.WHITE);
         pnlTimKiem.setBorder(createGroupBorder("Tìm kiếm"));
 
@@ -87,10 +82,10 @@ public class FrmTaiKhoan extends JPanel {
         cboLoai.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         txtTimKiem = new JTextField();
-        txtTimKiem.setPreferredSize(new Dimension(200, 40));
+        txtTimKiem.setPreferredSize(new Dimension(190, 40));
         txtTimKiem.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        JButton btnLamMoi = createToolButton("Làm mới", new Color(52, 152, 219), "/icons/refresh.png");
+        btnLamMoi = createToolButton("Làm mới", new Color(52, 152, 219), "/icons/refresh.png");
 
         pnlTimKiem.add(cboLoai);
         pnlTimKiem.add(txtTimKiem);
@@ -100,42 +95,18 @@ public class FrmTaiKhoan extends JPanel {
         pnlTop.add(pnlTimKiem, BorderLayout.EAST);
 
         add(pnlTop, BorderLayout.NORTH);
-
-        // bắt sự kiện 
-        btnThem.addActionListener(e -> themTaiKhoan());
-        btnSua.addActionListener(e -> suaTaiKhoan());
-        btnXoa.addActionListener(e -> xoaTaiKhoan());
-        btnLamMoi.addActionListener(e -> loadTable());
-
-        txtTimKiem.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                timKiem();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                timKiem();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                timKiem();
-            }
-        });
     }
+
     // hàm tạo viền có tiêu đề
     private TitledBorder createGroupBorder(String title) {
         TitledBorder border = BorderFactory.createTitledBorder(
-                    BorderFactory.createLineBorder(new Color(200, 200, 200), 1), 
-                    title
-        );
-        border.setTitleFont(new Font("Segoe UI", Font.BOLD, 14)); 
-        border.setTitleColor(new Color(100, 100, 100)); 
+                    BorderFactory.createLineBorder(new Color(200, 200, 200), 1), title);
+        border.setTitleFont(new Font("Segoe UI", Font.BOLD, 14));
+        border.setTitleColor(new Color(100, 100, 100));
         return border;
     }
 
-    // button
+    // hàm tạo button
     private JButton createToolButton(String text, Color color, String iconPath) {
         JButton btn = new JButton(text);
         btn.setBackground(Color.WHITE);
@@ -146,13 +117,12 @@ public class FrmTaiKhoan extends JPanel {
 
         btn.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(color, 2),
-                    BorderFactory.createEmptyBorder(8, 15, 8, 15) 
+                    BorderFactory.createEmptyBorder(8, 15, 8, 15)
         ));
-
-        ImageIcon icon = loadIcon(iconPath, 28);
-        if (icon != null) {
-            btn.setIcon(icon);
-        }
+        //load icon
+        ImageIcon icon = new ImageIcon(getClass().getResource(iconPath));
+        Image img = icon.getImage().getScaledInstance(28, 28, Image.SCALE_SMOOTH);
+        btn.setIcon(new ImageIcon(img));
 
         btn.setHorizontalTextPosition(SwingConstants.RIGHT);
         btn.setIconTextGap(10);
@@ -160,7 +130,7 @@ public class FrmTaiKhoan extends JPanel {
         return btn;
     }
 
-    // TABLE 
+    // DefaultTableModel
     private void initTable() {
         String[] cols = {"Mã TK", "Tên đăng nhập", "Mật khẩu", "Tên hiển thị", "Vai trò"};
         model = new DefaultTableModel(cols, 0) {
@@ -175,11 +145,12 @@ public class FrmTaiKhoan extends JPanel {
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        table.getTableHeader().setBackground(Color.BLUE);
+        table.getTableHeader().setBackground(new Color(240, 240, 240));
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
 
         table.setSelectionBackground(new Color(220, 235, 250));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setSelectionForeground(Color.BLACK);
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.getViewport().setBackground(Color.WHITE);
@@ -223,7 +194,7 @@ public class FrmTaiKhoan extends JPanel {
             return;
         }
         String maTK = model.getValueAt(row, 0).toString();
-        if (JOptionPane.showConfirmDialog(this, "Xóa tài khoản " + maTK + "?") 
+        if (JOptionPane.showConfirmDialog(this, "Xóa tài khoản " + maTK + "?")
                     == JOptionPane.YES_OPTION) {
             dao.delete(maTK);
             loadTable();
@@ -258,8 +229,8 @@ public class FrmTaiKhoan extends JPanel {
             boolean match = false;
             switch (loai) {
                 case 0:
-                    match = tk.getMaTK().toLowerCase().contains(keyword) 
-                                || tk.getTenDangNhap().toLowerCase().contains(keyword) 
+                    match = tk.getMaTK().toLowerCase().contains(keyword)
+                                || tk.getTenDangNhap().toLowerCase().contains(keyword)
                                 || tk.getTenHienThi().toLowerCase().contains(keyword);
                     break;
                 case 1:
@@ -274,5 +245,29 @@ public class FrmTaiKhoan extends JPanel {
             }
         }
         hienThiDanhSach(ketQua);
+    }
+
+    private void addEvents() {
+        btnThem.addActionListener(e -> themTaiKhoan());
+        btnSua.addActionListener(e -> suaTaiKhoan());
+        btnXoa.addActionListener(e -> xoaTaiKhoan());
+        btnLamMoi.addActionListener(e -> loadTable());
+
+        txtTimKiem.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                timKiem();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                timKiem();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                timKiem();
+            }
+        });
     }
 }
