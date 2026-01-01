@@ -9,5 +9,4 @@ package view;
  * @author Admin
  */
 public class FrmGoiMon {
-    
 }
