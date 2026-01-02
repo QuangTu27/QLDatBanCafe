@@ -1,53 +1,143 @@
 package DAO;
 
-import connect.MyConnection; // Import file kết nối của bạn
+import connect.MyConnection;
 import entity.Menu;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MenuDao {
-    
-    // Hàm lấy danh sách Menu từ SQL Server
-    public List<Menu> getListMenu() {
+
+    // ================== LẤY TẤT CẢ ==================
+    public List<Menu> selectAll() {
         List<Menu> list = new ArrayList<>();
-        String sql = "SELECT * FROM tbl_Menu"; // Tên bảng trong SQL của bạn
+        String sql = "SELECT * FROM tbl_Menu";
 
-        // 1. Khởi tạo đối tượng kết nối theo đúng class của bạn
-        MyConnection myConn = new MyConnection(); 
-        Connection conn = myConn.getInstance(); // Gọi hàm getInstance()
+        MyConnection myConn = new MyConnection();
+        Connection conn = myConn.getInstance();
 
-        if (conn == null) {
-            System.out.println("Kết nối thất bại!");
-            return list;
-        }
+        if (conn != null) {
+            try {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql);
 
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                // Đọc dữ liệu từ cột SQL
-                String ma = rs.getString("MaMenu");
-                String ten = rs.getString("TenMon");
-                double gia = rs.getDouble("DonGia");
-                // Cột LoaiMon có thể null, nên cần xử lý cẩn thận hoặc để mặc định
-                String loai = rs.getString("LoaiMon"); 
-
-                // Tạo đối tượng Menu
-                Menu m = new Menu(ma, ten, gia, loai);
-                list.add(m);
+                while (rs.next()) {
+                    Menu m = new Menu();
+                    m.setMaMenu(rs.getString("MaMenu"));
+                    m.setTenMon(rs.getString("TenMon"));
+                    m.setDonGia(rs.getDouble("DonGia"));
+                    m.setLoaiMon(rs.getString("LoaiMon"));
+                    m.setHinhAnh(rs.getString("HinhAnh"));
+                    list.add(m);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                myConn.closeConnection();
             }
-            
-            // Đóng kết nối sau khi dùng xong (Optional, tùy vào logic quản lý kết nối của bạn)
-            // myConn.closeConnection(); 
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        
         return list;
+    }
+
+    // ================== THÊM MÓN ==================
+    public boolean insert(Menu m) {
+        String sql = "INSERT INTO tbl_Menu VALUES ('"
+                + m.getMaMenu() + "', N'"
+                + m.getTenMon() + "', "
+                + m.getDonGia() + ", N'"
+                + m.getLoaiMon() + "', N'"
+                + m.getHinhAnh() + "')";
+
+        MyConnection myConn = new MyConnection();
+        Connection conn = myConn.getInstance();
+
+        if (conn != null) {
+            try {
+                Statement st = conn.createStatement();
+                return st.executeUpdate(sql) > 0;
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                myConn.closeConnection();
+            }
+        }
+        return false;
+    }
+
+    // ================== CẬP NHẬT MÓN ==================
+    public boolean update(Menu m) {
+        String sql = "UPDATE tbl_Menu SET "
+                + "TenMon = N'" + m.getTenMon() + "', "
+                + "DonGia = " + m.getDonGia() + ", "
+                + "LoaiMon = N'" + m.getLoaiMon() + "', "
+                + "HinhAnh = N'" + m.getHinhAnh() + "' "
+                + "WHERE MaMenu = '" + m.getMaMenu() + "'";
+
+        MyConnection myConn = new MyConnection();
+        Connection conn = myConn.getInstance();
+
+        if (conn != null) {
+            try {
+                Statement st = conn.createStatement();
+                return st.executeUpdate(sql) > 0;
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                myConn.closeConnection();
+            }
+        }
+        return false;
+    }
+
+    // ================== XÓA MÓN ==================
+    public boolean delete(String maMenu) {
+        String sql = "DELETE FROM tbl_Menu WHERE MaMenu = '" + maMenu + "'";
+
+        MyConnection myConn = new MyConnection();
+        Connection conn = myConn.getInstance();
+
+        if (conn != null) {
+            try {
+                Statement st = conn.createStatement();
+                return st.executeUpdate(sql) > 0;
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                myConn.closeConnection();
+            }
+        }
+        return false;
+    }
+
+    // ================== TÌM THEO TÊN MÓN (ví dụ) ==================
+    public Menu selectByName(String tenMon) {
+        String sql = "SELECT * FROM tbl_Menu WHERE TenMon = N'" + tenMon + "'";
+
+        MyConnection myConn = new MyConnection();
+        Connection conn = myConn.getInstance();
+
+        if (conn != null) {
+            try {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql);
+
+                if (rs.next()) {
+                    Menu m = new Menu();
+                    m.setMaMenu(rs.getString("MaMenu"));
+                    m.setTenMon(rs.getString("TenMon"));
+                    m.setDonGia(rs.getDouble("DonGia"));
+                    m.setLoaiMon(rs.getString("LoaiMon"));
+                    m.setHinhAnh(rs.getString("HinhAnh"));
+                    return m;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                myConn.closeConnection();
+            }
+        }
+        return null;
     }
 }

@@ -6,45 +6,49 @@ import javax.swing.ImageIcon;
 
 public class XImage {
 
+    private static final String IMAGE_PATH = "/image/";
+
     public static ImageIcon getIcon(String fileName) {
-        if (fileName == null || fileName.trim().isEmpty()) {
+        if (fileName == null) {
             return getDefaultIcon();
         }
 
-        fileName = fileName.trim();
-        URL url = XImage.class.getResource("/image/" + fileName);
+        // Chuẩn hoá tên file
+        fileName = fileName.trim().replaceAll("\\s+", "");
+
+        // Nếu chưa có đuôi .png thì tự thêm
+        if (!fileName.toLowerCase().endsWith(".png")) {
+            fileName += ".png";
+        }
+
+        URL url = XImage.class.getResource(IMAGE_PATH + fileName);
 
         if (url != null) {
             return new ImageIcon(url);
         }
 
-        System.err.println("Không tìm thấy ảnh: " + fileName);
+        System.err.println("Không tìm thấy ảnh: " + IMAGE_PATH + fileName);
         return getDefaultIcon();
     }
 
     private static ImageIcon getDefaultIcon() {
-        URL url = XImage.class.getResource("/image/no_image.png");
-        if (url != null) {
-            return new ImageIcon(url);
-        }
-        return null;
+        URL url = XImage.class.getResource(IMAGE_PATH + "no_image.png");
+        return url != null ? new ImageIcon(url) : null;
     }
 
     public static ImageIcon getResizedIcon(String fileName, int width, int height) {
         ImageIcon icon = getIcon(fileName);
-        if (icon != null) {
-            Image img = icon.getImage()
-                    .getScaledInstance(width, height, Image.SCALE_SMOOTH);
-            return new ImageIcon(img);
+        if (icon == null) {
+            return null;
         }
-        return null;
+
+        Image img = icon.getImage()
+                    .getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        return new ImageIcon(img);
     }
 
     public static Image getAppIcon() {
-        URL url = XImage.class.getResource("/image/cafe_logo.png");
-        if (url != null) {
-            return new ImageIcon(url).getImage();
-        }
-        return null;
+        URL url = XImage.class.getResource(IMAGE_PATH + "cafe_logo.png");
+        return url != null ? new ImageIcon(url).getImage() : null;
     }
 }

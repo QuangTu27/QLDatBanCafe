@@ -19,7 +19,7 @@ public class FrmBan extends JPanel {
     private JTable table;
     private DefaultTableModel model;
     private JTextField txtTimKiem;
-    private JComboBox<String> cboLoai;
+    private JComboBox<String> cboLocTrangThai;
     private JButton btnThem, btnSua, btnXoa, btnLamMoi;
 
     private BanDao dao = new BanDao();
@@ -42,35 +42,45 @@ public class FrmBan extends JPanel {
         pnlTop.setBorder(new EmptyBorder(10, 20, 10, 20));
         pnlTop.setPreferredSize(new Dimension(0, 130));
 
-        // Nhóm Chức năng
+        // --- NHÓM CHỨC NĂNG ---
         JPanel pnlChucNang = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
         pnlChucNang.setBackground(Color.WHITE);
         pnlChucNang.setBorder(createGroupBorder("Chức năng"));
 
-        btnThem = createToolButton("Thêm", new Color(46, 204, 113), "/icons/plus.png");
-        btnSua = createToolButton("Sửa", new Color(241, 196, 15), "/icons/edit.png");
-        btnXoa = createToolButton("Xóa", new Color(231, 76, 60), "/icons/delete.png");
+        btnThem = createToolButton("Thêm", new Color(46, 204, 113));
+        btnSua = createToolButton("Sửa", new Color(241, 196, 15));
+        btnXoa = createToolButton("Xóa", new Color(231, 76, 60));
 
         pnlChucNang.add(btnThem);
         pnlChucNang.add(btnSua);
         pnlChucNang.add(btnXoa);
 
-        // Nhóm Tìm kiếm
+        // --- NHÓM LỌC & TÌM KIẾM (Đồng bộ phong cách FrmMenu) ---
+        Font font = new Font("Segoe UI", Font.PLAIN, 14);
         JPanel pnlTimKiem = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         pnlTimKiem.setBackground(Color.WHITE);
-        pnlTimKiem.setBorder(createGroupBorder("Tìm kiếm bàn"));
+        pnlTimKiem.setBorder(createGroupBorder("Bộ lọc danh sách bàn"));
 
-        cboLoai = new JComboBox<>(new String[]{"Tất cả", "Tên bàn", "Trạng thái"});
-        cboLoai.setPreferredSize(new Dimension(130, 40));
-        cboLoai.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        // ComboBox lọc trạng thái bàn
+        cboLocTrangThai = new JComboBox<>(new String[]{"Tất cả trạng thái", "Trống", "Có khách", "Đã đặt"});
+        cboLocTrangThai.setPreferredSize(new Dimension(160, 40));
+        cboLocTrangThai.setFont(font);
 
+        // Ô nhập tìm kiếm chung (Tất cả: Tên hoặc Mã)
         txtTimKiem = new JTextField();
-        txtTimKiem.setPreferredSize(new Dimension(190, 40));
-        txtTimKiem.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtTimKiem.setPreferredSize(new Dimension(200, 40));
+        txtTimKiem.setFont(font);
 
-        btnLamMoi = createToolButton("Làm mới", new Color(52, 152, 219), "/icons/refresh.png");
+        btnLamMoi = createToolButton("Làm mới", new Color(52, 152, 219));
 
-        pnlTimKiem.add(cboLoai);
+        JLabel lblLoc = new JLabel("Lọc trạng thái:");
+        lblLoc.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        pnlTimKiem.add(lblLoc);
+        pnlTimKiem.add(cboLocTrangThai);
+
+        JLabel lblTim = new JLabel("Tìm kiếm:");
+        lblTim.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        pnlTimKiem.add(lblTim);
         pnlTimKiem.add(txtTimKiem);
         pnlTimKiem.add(btnLamMoi);
 
@@ -82,32 +92,38 @@ public class FrmBan extends JPanel {
 
     private TitledBorder createGroupBorder(String title) {
         TitledBorder border = BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200), 1), title);
+                    BorderFactory.createLineBorder(new Color(200, 200, 200), 1), title);
         border.setTitleFont(new Font("Segoe UI", Font.BOLD, 14));
         border.setTitleColor(new Color(100, 100, 100));
         return border;
     }
 
-    private JButton createToolButton(String text, Color color, String iconPath) {
+    private JButton createToolButton(String text, Color color) {
         JButton btn = new JButton(text);
         btn.setBackground(Color.WHITE);
         btn.setForeground(color);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 16));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setContentAreaFilled(false);
+        btn.setOpaque(true);
+
         btn.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(color, 2),
-                BorderFactory.createEmptyBorder(8, 15, 8, 15)
+                    BorderFactory.createLineBorder(color, 2),
+                    BorderFactory.createEmptyBorder(8, 15, 8, 15)
         ));
 
-        try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(iconPath));
-            Image img = icon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
-            btn.setIcon(new ImageIcon(img));
-        } catch (Exception e) {}
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                btn.setBackground(color);
+                btn.setForeground(Color.WHITE);
+            }
 
-        btn.setHorizontalTextPosition(SwingConstants.RIGHT);
-        btn.setIconTextGap(10);
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                btn.setBackground(Color.WHITE);
+                btn.setForeground(color);
+            }
+        });
         return btn;
     }
 
@@ -115,23 +131,26 @@ public class FrmBan extends JPanel {
         String[] cols = {"Mã bàn", "Tên bàn", "Số ghế", "Trạng thái"};
         model = new DefaultTableModel(cols, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
 
         table = new JTable(model);
-        table.setRowHeight(40);
+        table.setRowHeight(45);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        table.getTableHeader().setBackground(new Color(240, 240, 240));
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
         table.setSelectionBackground(new Color(220, 235, 250));
         table.setSelectionForeground(Color.BLACK);
 
-        // Căn giữa nội dung cột Số ghế và Trạng thái
+        // Căn giữa nội dung toàn bộ các cột cho đẹp
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
-        table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
-        table.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.getViewport().setBackground(Color.WHITE);
@@ -147,15 +166,38 @@ public class FrmBan extends JPanel {
     private void hienThiDanhSach(List<Ban> list) {
         model.setRowCount(0);
         for (Ban b : list) {
-            model.addRow(new Object[]{ b.getMaBan(), b.getTenBan(), b.getSoGhe(), b.getTrangThai() });
+            model.addRow(new Object[]{b.getMaBan(), b.getTenBan(), b.getSoGhe(), b.getTrangThai()});
         }
+    }
+
+    private void timKiem() {
+        String keyword = txtTimKiem.getText().trim().toLowerCase();
+        String trangThaiChon = cboLocTrangThai.getSelectedItem().toString();
+
+        List<Ban> ketQua = new ArrayList<>();
+
+        for (Ban b : fullList) {
+            // Logic lọc theo Trạng thái
+            boolean matchTrangThai = trangThaiChon.equals("Tất cả trạng thái") || b.getTrangThai().equals(trangThaiChon);
+
+            // Logic tìm kiếm "Tất cả": Khớp với Mã bàn HOẶC Tên bàn
+            boolean matchKey = b.getMaBan().toLowerCase().contains(keyword)
+                        || b.getTenBan().toLowerCase().contains(keyword);
+
+            if (matchTrangThai && matchKey) {
+                ketQua.add(b);
+            }
+        }
+        hienThiDanhSach(ketQua);
     }
 
     private void addEvents() {
         btnThem.addActionListener(e -> {
             DlgBan dlg = new DlgBan(SwingUtilities.getWindowAncestor(this), null);
             dlg.setVisible(true);
-            if (dlg.getResult()) loadTable();
+            if (dlg.getResult()) {
+                loadTable();
+            }
         });
 
         btnSua.addActionListener(e -> {
@@ -165,63 +207,56 @@ public class FrmBan extends JPanel {
                 return;
             }
             Ban b = new Ban(
-                model.getValueAt(row, 0).toString(),
-                model.getValueAt(row, 1).toString(),
-                Integer.parseInt(model.getValueAt(row, 2).toString()),
-                model.getValueAt(row, 3).toString()
+                        model.getValueAt(row, 0).toString(),
+                        model.getValueAt(row, 1).toString(),
+                        Integer.parseInt(model.getValueAt(row, 2).toString()),
+                        model.getValueAt(row, 3).toString()
             );
             DlgBan dlg = new DlgBan(SwingUtilities.getWindowAncestor(this), b);
             dlg.setVisible(true);
-            if (dlg.getResult()) loadTable();
+            if (dlg.getResult()) {
+                loadTable();
+            }
         });
 
         btnXoa.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row < 0) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn bàn cần xóa!");
                 return;
             }
             String maBan = model.getValueAt(row, 0).toString();
             if (JOptionPane.showConfirmDialog(this, "Xóa bàn " + maBan + "?", "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                if (dao.delete(maBan)) loadTable();
+                if (dao.delete(maBan)) {
+                    loadTable();
+                }
             }
         });
 
-        btnLamMoi.addActionListener(e -> loadTable());
+        btnLamMoi.addActionListener(e -> {
+            txtTimKiem.setText("");
+            cboLocTrangThai.setSelectedIndex(0);
+            loadTable();
+        });
 
+        // Sự kiện lọc ngay khi thay đổi ComboBox
+        cboLocTrangThai.addActionListener(e -> timKiem());
+
+        // Sự kiện tìm kiếm Real-time khi gõ văn bản
         txtTimKiem.getDocument().addDocumentListener(new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) { timKiem(); }
-            @Override public void removeUpdate(DocumentEvent e) { timKiem(); }
-            @Override public void changedUpdate(DocumentEvent e) { timKiem(); }
-        });
-    }
-
-    private void timKiem() {
-        String keyword = txtTimKiem.getText().trim().toLowerCase();
-        int loai = cboLoai.getSelectedIndex();
-        if (keyword.isEmpty()) {
-            hienThiDanhSach(fullList);
-            return;
-        }
-
-        List<Ban> ketQua = new ArrayList<>();
-        for (Ban b : fullList) {
-            boolean match = false;
-            switch (loai) {
-                case 0: // Tất cả
-                    match = b.getMaBan().toLowerCase().contains(keyword) 
-                         || b.getTenBan().toLowerCase().contains(keyword) 
-                         || b.getTrangThai().toLowerCase().contains(keyword);
-                    break;
-                case 1: // Tên bàn
-                    match = b.getTenBan().toLowerCase().contains(keyword);
-                    break;
-                case 2: // Trạng thái
-                    match = b.getTrangThai().toLowerCase().contains(keyword);
-                    break;
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                timKiem();
             }
-            if (match) ketQua.add(b);
-        }
-        hienThiDanhSach(ketQua);
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                timKiem();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                timKiem();
+            }
+        });
     }
 }

@@ -1,33 +1,23 @@
-package entity; 
+package entity;
 
 public class Menu {
-    // Các thuộc tính cơ bản của một món ăn
-    private String maMenu;      // Mã món (ví dụ: MN001) - Khóa chính
-    private String tenMon;      // Tên món (ví dụ: Cà phê đá)
-    private double donGia;      // Đơn giá niêm yết
-    private String donViTinh;   // Đơn vị tính (Ly, Chai, Dĩa...) - Tùy chọn
+    private String maMenu;
+    private String tenMon;
+    private double donGia;
+    private String loaiMon;
+    private String hinhAnh;
 
-    // 1. Constructor không tham số (Bắt buộc để tránh lỗi khi dùng Framework sau này)
     public Menu() {
     }
 
-    // 2. Constructor đầy đủ tham số
-    public Menu(String maMenu, String tenMon, double donGia, String donViTinh) {
+    public Menu(String maMenu, String tenMon, double donGia, String loaiMon, String hinhAnh) {
         this.maMenu = maMenu;
         this.tenMon = tenMon;
         this.donGia = donGia;
-        this.donViTinh = donViTinh;
+        this.loaiMon = loaiMon;
+        this.hinhAnh = hinhAnh;
     }
 
-    // Constructor rút gọn (nếu không cần Đơn vị tính)
-    public Menu(String maMenu, String tenMon, double donGia) {
-        this.maMenu = maMenu;
-        this.tenMon = tenMon;
-        this.donGia = donGia;
-        this.donViTinh = "Ly"; // Mặc định
-    }
-
-    // 3. Getter và Setter
     public String getMaMenu() {
         return maMenu;
     }
@@ -52,26 +42,24 @@ public class Menu {
         this.donGia = donGia;
     }
 
-    public String getDonViTinh() {
-        return donViTinh;
+    public String getLoaiMon() {
+        return loaiMon;
     }
 
-    public void setDonViTinh(String donViTinh) {
-        this.donViTinh = donViTinh;
+    public void setLoaiMon(String loaiMon) {
+        this.loaiMon = loaiMon;
     }
 
-    // 4. Ghi đè toString()
-    // Rất quan trọng: Giúp JList hoặc ComboBox hiển thị tên món thay vì mã hash
+    public String getHinhAnh() {
+        return hinhAnh;
+    }
+
+    public void setHinhAnh(String hinhAnh) {
+        this.hinhAnh = hinhAnh;
+    }
+
     @Override
     public String toString() {
-        return tenMon; 
+        return tenMon;
     }
-    
-    // Nếu bạn muốn hiển thị kiểu "MN001 - Cà phê", hãy dùng code dưới:
-    /*
-    @Override
-    public String toString() {
-        return maMenu + " - " + tenMon;
-    }
-    */
 }

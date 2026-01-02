@@ -1,6 +1,5 @@
 package view;
 
-import static java.awt.AWTEventMulticaster.add;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -55,7 +54,7 @@ public class FrmMain extends JFrame {
 
     private void initUI() {
         setTitle("Hệ thống Quản lý Cafe");
-        setSize(1250, 750);
+        setSize(1350, 750);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -211,11 +210,20 @@ public class FrmMain extends JFrame {
             switchPanel(new FrmBan());
         });
 
-        btnMenu.addActionListener(e -> setSelectedMenu(btnMenu));
+        btnMenu.addActionListener(e -> {
+                setSelectedMenu(btnMenu);
+            switchPanel(new FrmMenu());
+        });
 
-        btnDatBan.addActionListener(e -> setSelectedMenu(btnDatBan));
+        btnDatBan.addActionListener(e -> {
+                setSelectedMenu(btnDatBan);
+            switchPanel(new FrmDatBan());
+        });
 
-        btnThongKe.addActionListener(e -> setSelectedMenu(btnThongKe));
+        btnThongKe.addActionListener(e -> {
+                setSelectedMenu(btnThongKe);
+            
+        });
 
         btnTaiKhoan.addActionListener(e -> {
             if (Auth.isManager()) {
