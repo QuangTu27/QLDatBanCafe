@@ -1,7 +1,7 @@
 package DAO;
 
 import entity.ChiTietDatBan;
-import connect.MyConnection; 
+import connect.MyConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,12 +17,13 @@ public class ChiTietDatBanDAO {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        
+
         try {
             MyConnection myCon = new MyConnection();
             conn = myCon.getInstance();
-            
-            String sql = "SELECT * FROM tbl_Menu"; 
+
+            // Lấy thêm cột HinhAnh từ bảng Menu
+            String sql = "SELECT MaMenu, TenMon, DonGia, HinhAnh FROM tbl_Menu";
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();
 
@@ -30,7 +31,10 @@ public class ChiTietDatBanDAO {
                 String maMenu = rs.getString("MaMenu");
                 String tenMon = rs.getString("TenMon");
                 double donGia = rs.getDouble("DonGia");
-                list.add(new ChiTietDatBan(maMenu, tenMon, donGia));
+                String hinhAnh = rs.getString("HinhAnh");
+
+                ChiTietDatBan item = new ChiTietDatBan(maMenu, tenMon, donGia, hinhAnh);
+                list.add(item);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -50,13 +54,14 @@ public class ChiTietDatBanDAO {
         try {
             MyConnection myCon = new MyConnection();
             conn = myCon.getInstance();
-            
+
             // --- SỬA Ở ĐÂY: Đổi JOIN thành LEFT JOIN ---
-            String sql = "SELECT ct.MaCTDatBan, ct.MaDatBan, ct.MaMenu, ct.SoLuong, ct.DonGia, m.TenMon " +
-                         "FROM tbl_ChiTietDatBan ct " +
-                         "LEFT JOIN tbl_Menu m ON ct.MaMenu = m.MaMenu " + // <--- LEFT JOIN lấy tất cả chi tiết
-                         "WHERE ct.MaDatBan = ?";
-                         
+            String sql = "SELECT ct.MaCTDatBan, ct.MaDatBan, ct.MaMenu, ct.SoLuong, ct.DonGia, m.TenMon, m.HinhAnh "
+                        + "FROM tbl_ChiTietDatBan ct "
+                        + "LEFT JOIN tbl_Menu m ON ct.MaMenu = m.MaMenu "
+                        + //Left join lấy tất cả chi tiết
+                        "WHERE ct.MaDatBan = ?";
+
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, maDatBan);
             rs = stmt.executeQuery();
@@ -67,14 +72,15 @@ public class ChiTietDatBanDAO {
                 String maMenu = rs.getString("MaMenu");
                 int soLuong = rs.getInt("SoLuong");
                 double donGia = rs.getDouble("DonGia");
-                
+                String hinh = rs.getString("HinhAnh");
+
                 // Kiểm tra null nếu món ăn đã bị xóa khỏi menu
                 String tenMon = rs.getString("TenMon");
                 if (tenMon == null) {
                     tenMon = "Món không xác định (" + maMenu + ")";
                 }
 
-                list.add(new ChiTietDatBan(maCT, maDB, maMenu, tenMon, soLuong, donGia));
+                list.add(new ChiTietDatBan(maCT, maDB, maMenu, tenMon, soLuong, donGia, hinh));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -82,6 +88,42 @@ public class ChiTietDatBanDAO {
             closeResources(stmt, rs);
         }
         return list;
+    }
+
+    public String getMaDatBanDangHoatDong(String maBan) {
+        String maDB = null;
+        String sql = "SELECT MaDatBan FROM tbl_DatBan WHERE MaBan = ? AND (TrangThai = N'Đang dùng' OR TrangThai = N'Đã đặt' OR TrangThai = N'Trống')";
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            connect.MyConnection myCon = new connect.MyConnection();
+            conn = myCon.getInstance();
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, maBan);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                maDB = rs.getString("MaDatBan");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // Tận dụng hàm đóng tài nguyên bạn đã có
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e2) {
+                e2.printStackTrace();
+            }
+        }
+        return maDB;
     }
 
     // 3. THÊM MÓN
@@ -92,16 +134,16 @@ public class ChiTietDatBanDAO {
         try {
             MyConnection myCon = new MyConnection();
             conn = myCon.getInstance();
-            
+
             String sql = "INSERT INTO tbl_ChiTietDatBan (MaCTDatBan, MaDatBan, MaMenu, SoLuong, DonGia) VALUES (?, ?, ?, ?, ?)";
             stmt = conn.prepareStatement(sql);
-            
+
             stmt.setString(1, ct.getMaCTDatBan());
             stmt.setString(2, ct.getMaDatBan());
             stmt.setString(3, ct.getMaMenu());
             stmt.setInt(4, ct.getSoLuong());
             stmt.setDouble(5, ct.getDonGia());
-            
+
             n = stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -110,7 +152,7 @@ public class ChiTietDatBanDAO {
         }
         return n > 0;
     }
-    
+
     // 4. XÓA MÓN
     public boolean deleteChiTiet(String maCTDatBan) {
         Connection conn = null;
@@ -119,11 +161,11 @@ public class ChiTietDatBanDAO {
         try {
             MyConnection myCon = new MyConnection();
             conn = myCon.getInstance();
-            
+
             String sql = "DELETE FROM tbl_ChiTietDatBan WHERE MaCTDatBan = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, maCTDatBan);
-            
+
             n = stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -141,13 +183,13 @@ public class ChiTietDatBanDAO {
         try {
             MyConnection myCon = new MyConnection();
             conn = myCon.getInstance();
-            
+
             String sql = "UPDATE tbl_ChiTietDatBan SET SoLuong = ? WHERE MaCTDatBan = ?";
             stmt = conn.prepareStatement(sql);
-            
+
             stmt.setInt(1, soLuongMoi);
             stmt.setString(2, maCT);
-            
+
             n = stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -159,12 +201,17 @@ public class ChiTietDatBanDAO {
 
     private void closeResources(PreparedStatement stmt, ResultSet rs) {
         try {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
     public String taoMaCTMoi() {
         String maMoi = "CT001"; // Mặc định nếu bảng trống
         Connection conn = null;
@@ -173,7 +220,7 @@ public class ChiTietDatBanDAO {
         try {
             MyConnection myCon = new MyConnection();
             conn = myCon.getInstance();
-            
+
             // Lấy mã lớn nhất hiện có trong toàn bộ bảng tbl_ChiTietDatBan
             String sql = "SELECT MAX(MaCTDatBan) FROM tbl_ChiTietDatBan";
             stmt = conn.prepareStatement(sql);
@@ -201,6 +248,7 @@ public class ChiTietDatBanDAO {
         }
         return maMoi;
     }
+
     // 6. LẤY DANH SÁCH CÁC MÃ ĐẶT BÀN ĐANG CÓ MÓN (Để tô màu bàn)
     public List<String> getDanhSachMaDatBanCoMon() {
         List<String> listMa = new ArrayList<>();
@@ -210,7 +258,7 @@ public class ChiTietDatBanDAO {
         try {
             MyConnection myCon = new MyConnection();
             conn = myCon.getInstance();
-            
+
             // Lấy duy nhất (DISTINCT) các mã đặt bàn đang tồn tại trong bảng chi tiết
             String sql = "SELECT DISTINCT MaDatBan FROM tbl_ChiTietDatBan";
             stmt = conn.prepareStatement(sql);

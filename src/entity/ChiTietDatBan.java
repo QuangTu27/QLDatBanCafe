@@ -10,29 +10,32 @@ public class ChiTietDatBan {
     
     private int soLuong;       
     private double donGia;     
-
+    
     // Thuộc tính hiển thị (Không nằm trong bảng ChiTietDatBan nhưng cần lấy từ bảng Menu)
     private String tenMon; 
-
+    private String hinhAnh;
+    
     public ChiTietDatBan() {
     }
 
     // Constructor 1: Dùng để load danh sách MENU lên JList (Chưa có mã đặt bàn, chưa có số lượng)
-    public ChiTietDatBan(String maMenu, String tenMon, double donGia) {
+    public ChiTietDatBan(String maMenu, String tenMon, double donGia, String hinhAnh) {
         this.maMenu = maMenu;
         this.tenMon = tenMon;
         this.donGia = donGia;
+        this.hinhAnh = hinhAnh;
         this.soLuong = 0; // Mặc định
     }
 
     // Constructor 2: Đầy đủ (Dùng khi lưu vào CSDL hoặc đọc chi tiết đơn hàng)
-    public ChiTietDatBan(String maCTDatBan, String maDatBan, String maMenu, String tenMon, int soLuong, double donGia) {
+    public ChiTietDatBan(String maCTDatBan, String maDatBan, String maMenu, String tenMon, int soLuong, double donGia, String hinhAnh) {
         this.maCTDatBan = maCTDatBan;
         this.maDatBan = maDatBan;
         this.maMenu = maMenu;
         this.tenMon = tenMon; 
         this.soLuong = soLuong;
         this.donGia = donGia;
+        this.hinhAnh = hinhAnh;
     }
 
     // --- Getters và Setters ---
@@ -53,7 +56,10 @@ public class ChiTietDatBan {
 
     public String getTenMon() { return tenMon; }
     public void setTenMon(String tenMon) { this.tenMon = tenMon; }
-
+    
+    public String getHinhAnh() { return hinhAnh; }
+    public void setHinhAnh(String hinhAnh) { this.hinhAnh = hinhAnh; }
+    
     // Tính thành tiền
     public double getThanhTien() {
         return this.soLuong * this.donGia;

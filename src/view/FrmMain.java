@@ -35,7 +35,7 @@ public class FrmMain extends JFrame {
     private JPanel pnMenu, pnContent, pnBan;
     private List<JButton> listMenu = new ArrayList<>();
     private JButton btnActive = null;
-    private JButton btnTrangChu, btnKhachHang, btnBan, btnMenu, btnDatBan, btnThongKe,
+    private JButton btnTrangChu, btnKhachHang, btnBan, btnMenu, btnDatBan, btnGoiMon,
                 btnTaiKhoan, btnLogout;
     // Màu sắc
     private final Color COL_SIDEBAR_BG = Color.DARK_GRAY;
@@ -156,7 +156,7 @@ public class FrmMain extends JFrame {
         btnBan = createMenuItem("Quản lý bàn", "/icons/table.png");
         btnMenu = createMenuItem("Quản lý Menu", "/icons/menu.png");
         btnDatBan = createMenuItem("Quản lý đặt bàn", "/icons/reserve.png");
-        btnThongKe = createMenuItem("Thống kê & Hóa đơn", "/icons/bill.png");
+        btnGoiMon = createMenuItem("Gọi món", "/icons/order.png");
         btnTaiKhoan = createMenuItem("Quản lý tài khoản", "/icons/account.png");
         btnLogout = createMenuItem("ĐĂNG XUẤT", "/icons/logout.png");
         btnLogout.setForeground(new Color(255, 100, 100));
@@ -166,7 +166,7 @@ public class FrmMain extends JFrame {
         pnMenu.add(btnBan);
         pnMenu.add(btnMenu);
         pnMenu.add(btnDatBan);
-        pnMenu.add(btnThongKe);
+        pnMenu.add(btnGoiMon);
         pnMenu.add(Box.createVerticalGlue());
         pnMenu.add(btnTaiKhoan);
         pnMenu.add(btnLogout);
@@ -220,8 +220,9 @@ public class FrmMain extends JFrame {
             switchPanel(new FrmDatBan());
         });
 
-        btnThongKe.addActionListener(e -> {
-                setSelectedMenu(btnThongKe);
+        btnGoiMon.addActionListener(e -> {
+                setSelectedMenu(btnGoiMon);
+                switchPanel(new FrmGoiMon());
             
         });
 
