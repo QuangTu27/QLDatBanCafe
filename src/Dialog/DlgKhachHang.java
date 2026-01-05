@@ -2,10 +2,24 @@ package Dialog;
 
 import DAO.KhachHangDao;
 import entity.KhachHang;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dialog.ModalityType;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 public class DlgKhachHang extends JDialog {
 
@@ -37,7 +51,7 @@ public class DlgKhachHang extends JDialog {
         setSize(500, 450);
         setLayout(new BorderLayout());
 
-        // HEADER 
+        // header 
         JPanel pnlHeader = new JPanel();
         pnlHeader.setBackground(new Color(46, 204, 113));
         pnlHeader.setPreferredSize(new Dimension(0, 30));
@@ -47,7 +61,7 @@ public class DlgKhachHang extends JDialog {
         pnlHeader.add(lblTitle);
         add(pnlHeader, BorderLayout.NORTH);
 
-        // FORM NHẬP 
+        // form nhập
         JPanel pnlForm = new JPanel(new GridLayout(4, 2, 15, 25));
         pnlForm.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
 
@@ -113,7 +127,6 @@ public class DlgKhachHang extends JDialog {
                     BorderFactory.createEmptyBorder(10, 30, 10, 30)
         ));
 
-        // Hiệu ứng Hover: Rê chuột đổi màu nền
         btn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -159,27 +172,25 @@ public class DlgKhachHang extends JDialog {
         String ten = txtTenKH.getText().trim();
         String sdt = txtSDT.getText().trim();
 
-        // 1. Kiểm tra không được để trống các trường bắt buộc
+        // Kiểm tra dữ liệu
         if (ma.isEmpty() || ten.isEmpty() || sdt.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Mã, Tên và Số điện thoại!");
             return false;
         }
 
-        // 2. Kiểm tra SĐT phải là số và có độ dài từ 10 chữ số
         if (!sdt.matches("^[0-9]{10}$")) {
             JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ (phải là số và có 10 chữ số)!");
             txtSDT.requestFocus();
             return false;
         }
 
-        // 3. Kiểm tra Email (nếu có nhập thì phải đúng định dạng)
         String email = txtEmail.getText().trim();
         if (!email.isEmpty() && !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             JOptionPane.showMessageDialog(this, "Định dạng Email không hợp lệ!");
             txtEmail.requestFocus();
             return false;
         }
-
+        
         return true;
     }
     

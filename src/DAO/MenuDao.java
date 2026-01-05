@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MenuDao {
-
-    // ================== LẤY TẤT CẢ ==================
     public List<Menu> selectAll() {
         List<Menu> list = new ArrayList<>();
         String sql = "SELECT * FROM tbl_Menu";
@@ -41,7 +39,6 @@ public class MenuDao {
         return list;
     }
 
-    // ================== THÊM MÓN ==================
     public boolean insert(Menu m) {
         String sql = "INSERT INTO tbl_Menu VALUES ('"
                 + m.getMaMenu() + "', N'"
@@ -66,7 +63,6 @@ public class MenuDao {
         return false;
     }
 
-    // ================== CẬP NHẬT MÓN ==================
     public boolean update(Menu m) {
         String sql = "UPDATE tbl_Menu SET "
                 + "TenMon = N'" + m.getTenMon() + "', "
@@ -91,7 +87,6 @@ public class MenuDao {
         return false;
     }
 
-    // ================== XÓA MÓN ==================
     public boolean delete(String maMenu) {
         String sql = "DELETE FROM tbl_Menu WHERE MaMenu = '" + maMenu + "'";
 
@@ -111,7 +106,6 @@ public class MenuDao {
         return false;
     }
 
-    // ================== TÌM THEO TÊN MÓN (ví dụ) ==================
     public Menu selectByName(String tenMon) {
         String sql = "SELECT * FROM tbl_Menu WHERE TenMon = N'" + tenMon + "'";
 

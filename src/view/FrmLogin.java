@@ -48,7 +48,7 @@ public class FrmLogin extends JFrame {
         setLayout(new GridLayout(1, 2)); // Chia đôi màn hình: Trái - Phải
         setResizable(false);
 
-        // 1. PANEL TRÁI
+        // panel trái
         JPanel pnlLeft = new JPanel();
         pnlLeft.setBackground(MAIN_COLOR);
         pnlLeft.setLayout(new GridBagLayout());
@@ -57,16 +57,6 @@ public class FrmLogin extends JFrame {
         lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 100));
         lblIcon.setForeground(Color.WHITE);
         lblIcon.setPreferredSize(new Dimension(200, 150));
-//        JLabel lblIcon = new JLabel(); 
-//        ImageIcon iconLogo = loadIcon("/icons/logo.jpg", 150, 150);
-//        if (iconLogo != null) {
-//            lblIcon.setIcon(iconLogo);
-//        } else {
-//            // Phòng hờ nếu chưa có ảnh thì hiện chữ tạm
-//            lblIcon.setText("CAFE");
-//            lblIcon.setFont(new Font("Segoe UI", Font.BOLD, 40));
-//            lblIcon.setForeground(Color.WHITE);
-//        }
 
         JLabel lblBrand = new JLabel("CAFE MANAGER");
         lblBrand.setFont(new Font("Segoe UI", Font.BOLD, 26));
@@ -89,7 +79,7 @@ public class FrmLogin extends JFrame {
         gbcLeft.gridy = 2;
         pnlLeft.add(lblSlogan, gbcLeft);
 
-        // 2. PANEL PHẢI
+        //panel phải
         JPanel pnlRight = new JPanel();
         pnlRight.setBackground(Color.WHITE);
         pnlRight.setLayout(new GridBagLayout());
@@ -98,7 +88,6 @@ public class FrmLogin extends JFrame {
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Tiêu đề Form
         JLabel lblTitle = new JLabel("ĐĂNG NHẬP");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitle.setForeground(MAIN_COLOR);
@@ -109,14 +98,14 @@ public class FrmLogin extends JFrame {
         lblUser.setForeground(Color.GRAY);
 
         txtUsername = new JTextField(15);
-        styleTextField(txtUsername); // Hàm làm đẹp ô nhập
+        styleTextField(txtUsername);
 
         JLabel lblPass = new JLabel("Mật khẩu:");
         lblPass.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblPass.setForeground(Color.GRAY);
 
         txtPassword = new JPasswordField(15);
-        styleTextField(txtPassword); // Hàm làm đẹp ô nhập
+        styleTextField(txtPassword);
 
         btnLogin = new JButton("ĐĂNG NHẬP");
         btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -129,12 +118,10 @@ public class FrmLogin extends JFrame {
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridwidth = 2;
         gbc.insets = new Insets(0, 0, 30, 0);
         pnlRight.add(lblTitle, gbc);
 
-        gbc.gridwidth = 1;
-        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.insets = new Insets(5, 0, 5, 0);
 
         gbc.gridy = 1;
         pnlRight.add(lblUser, gbc);
@@ -147,7 +134,7 @@ public class FrmLogin extends JFrame {
         pnlRight.add(txtPassword, gbc);
 
         gbc.gridy = 5;
-        gbc.insets = new Insets(30, 10, 10, 10);
+        gbc.insets = new Insets(30, 0, 10, 0);
         pnlRight.add(btnLogin, gbc);
 
         add(pnlLeft);
@@ -195,8 +182,6 @@ public class FrmLogin extends JFrame {
         } catch (Exception e) {
         }
 
-        SwingUtilities.invokeLater(() -> {
-            new FrmLogin().setVisible(true);
-        });
+        new FrmLogin().setVisible(true);
     }
 }

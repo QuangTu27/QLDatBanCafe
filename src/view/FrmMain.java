@@ -25,7 +25,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 import util.Auth;
@@ -100,14 +99,13 @@ public class FrmMain extends JFrame {
         btn.setBackground(COL_SIDEBAR_BG);
         btn.setHorizontalAlignment(SwingConstants.LEFT);
 
-        // Chỉnh khoảng cách giữa icon và chữ
+        // khoảng cách giữa icon và chữ
         btn.setIconTextGap(10);
         btn.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 0));
 
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
-        btn.setContentAreaFilled(true);
-        btn.setOpaque(true);
+        
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         // hover
@@ -160,7 +158,7 @@ public class FrmMain extends JFrame {
         btnTaiKhoan = createMenuItem("Quản lý tài khoản", "/icons/account.png");
         btnLogout = createMenuItem("ĐĂNG XUẤT", "/icons/logout.png");
         btnLogout.setForeground(new Color(255, 100, 100));
-        //add vào panel chung
+        //add vào panel
         pnMenu.add(btnTrangChu);
         pnMenu.add(btnKhachHang);
         pnMenu.add(btnBan);
@@ -171,7 +169,7 @@ public class FrmMain extends JFrame {
         pnMenu.add(btnTaiKhoan);
         pnMenu.add(btnLogout);
         pnMenu.add(Box.createVerticalStrut(20));
-        // Mặc định chọn trang chủ khi mở lên
+
         setSelectedMenu(btnTrangChu);
     }
 
@@ -276,7 +274,6 @@ public class FrmMain extends JFrame {
             // Tải ảnh từ thư mục resource
             ImageIcon img = new ImageIcon(getClass().getResource("/icons/logocafe.png"));
 
-            // Gán icon cho Frame
             this.setIconImage(img.getImage());
         } catch (Exception e) {
             System.out.println("Không tìm thấy file logo: " + e.getMessage());
@@ -288,7 +285,7 @@ public class FrmMain extends JFrame {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
         }
-        SwingUtilities.invokeLater(() -> new FrmMain().setVisible(true));
+        new FrmMain().setVisible(true);
     }
 
 }

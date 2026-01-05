@@ -34,7 +34,7 @@ public class XImage {
         ImageIcon icon = getIcon(fileName);
         if (icon != null) {
             Image img = icon.getImage()
-                        .getScaledInstance(width, height, Image.SCALE_SMOOTH);
+                    .getScaledInstance(width, height, Image.SCALE_SMOOTH);
             return new ImageIcon(img);
         }
         return null;

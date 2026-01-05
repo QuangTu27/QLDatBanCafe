@@ -2,7 +2,6 @@ package Dialog;
 
 import DAO.TaiKhoanDao;
 import entity.TaiKhoan;
-import static java.awt.AWTEventMulticaster.add;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;

@@ -12,12 +12,8 @@ import entity.TaiKhoan;
 import java.util.List;
 import java.util.ArrayList;
 
-/**
- *
- * @author Admin
- */
+
 public class TaiKhoanDao {
-    // Lấy tất cả danh sách nhân viên
     public List<TaiKhoan> selectAll() {
         List<TaiKhoan> list = new ArrayList<>();
         String sql = "SELECT * FROM tbl_TaiKhoan";
@@ -41,13 +37,12 @@ public class TaiKhoanDao {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                myConn.closeConnection(); // Đóng kết nối sau khi dùng xong
+                myConn.closeConnection();
             }
         }
         return list;
     }
 
-    // Thêm mới tài khoản
     public boolean insert(TaiKhoan tk) {
         String sql = "INSERT INTO tbl_TaiKhoan (MaTK, TenDangNhap, MatKhau, TenHienThi, PhanQuyen) VALUES (?, ?, ?, ?, ?)";
         
