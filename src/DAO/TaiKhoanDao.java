@@ -44,7 +44,8 @@ public class TaiKhoanDao {
     }
 
     public boolean insert(TaiKhoan tk) {
-        String sql = "INSERT INTO tbl_TaiKhoan (MaTK, TenDangNhap, MatKhau, TenHienThi, PhanQuyen) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO tbl_TaiKhoan "
+                    + "(MaTK, TenDangNhap, MatKhau, TenHienThi, PhanQuyen) VALUES (?, ?, ?, ?, ?)";
         
         MyConnection myConn = new MyConnection();
         Connection conn = myConn.getInstance();
