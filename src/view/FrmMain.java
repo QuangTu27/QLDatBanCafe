@@ -27,7 +27,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 import util.Auth;
@@ -37,7 +36,7 @@ public class FrmMain extends JFrame {
     private JPanel pnMenu, pnContent, pnBan;
     private List<JButton> listMenu = new ArrayList<>();
     private JButton btnActive = null;
-    private JButton btnTrangChu, btnKhachHang, btnBan, btnMenu, btnDatBan, btnThongKe,
+    private JButton btnTrangChu, btnKhachHang, btnBan, btnMenu, btnDatBan, btnGoiMon,
                 btnTaiKhoan, btnLogout;
     // Màu sắc
     private final Color COL_SIDEBAR_BG = Color.DARK_GRAY;
@@ -53,7 +52,6 @@ public class FrmMain extends JFrame {
         setAppLogo();
         addEvents();
 
-        // LOGIC: Gọi load để đổ dữ liệu bàn ngay khi mở máy
         loadSoDoBan();
     }
 
@@ -77,13 +75,13 @@ public class FrmMain extends JFrame {
         lblHello.setFont(new Font("Segoe UI", Font.ITALIC, 18));
         pnHeader.add(lblHello);
 
-        // LOGIC: Khởi tạo pnBan để chứa các nút bàn
+        // Khởi tạo pnBan để chứa các nút bàn
         pnBan = new JPanel(new GridLayout(0, 5, 15, 15)); // 5 cột, khoảng cách 15px
         pnBan.setBackground(new Color(245, 245, 245));
         pnBan.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         pnContent.add(pnHeader, BorderLayout.NORTH);
-        // LOGIC: Mặc định đưa sơ đồ bàn vào trung tâm nội dung
+        //Mặc định đưa sơ đồ bàn vào trung tâm nội dung
         pnContent.add(pnBan, BorderLayout.CENTER);
 
         add(pnMenu, BorderLayout.WEST);
@@ -97,10 +95,10 @@ public class FrmMain extends JFrame {
             Image img = icon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
             btn.setIcon(new ImageIcon(img));
         } catch (Exception e) {
+            System.err.println("Không load được icon: " + iconPath);
         }
 
         listMenu.add(btn);
-        btn.setAlignmentX(Component.LEFT_ALIGNMENT);
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
         btn.setPreferredSize(new Dimension(260, 60));
         btn.setFont(new Font("Segoe UI", Font.BOLD, 16));
@@ -111,8 +109,7 @@ public class FrmMain extends JFrame {
         btn.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 0));
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
-        btn.setContentAreaFilled(true);
-        btn.setOpaque(true);
+       
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         btn.addMouseListener(new MouseAdapter() {
@@ -157,7 +154,7 @@ public class FrmMain extends JFrame {
         btnBan = createMenuItem("Quản lý bàn", "/icons/table.png");
         btnMenu = createMenuItem("Quản lý Menu", "/icons/menu.png");
         btnDatBan = createMenuItem("Quản lý đặt bàn", "/icons/reserve.png");
-        btnThongKe = createMenuItem("Gọi món", "/icons/order.png");
+        btnGoiMon = createMenuItem("Gọi món", "/icons/order.png");
         btnTaiKhoan = createMenuItem("Quản lý tài khoản", "/icons/account.png");
         btnLogout = createMenuItem("ĐĂNG XUẤT", "/icons/logout.png");
         btnLogout.setForeground(new Color(255, 100, 100));
@@ -167,7 +164,7 @@ public class FrmMain extends JFrame {
         pnMenu.add(btnBan);
         pnMenu.add(btnMenu);
         pnMenu.add(btnDatBan);
-        pnMenu.add(btnThongKe);
+        pnMenu.add(btnGoiMon);
         pnMenu.add(Box.createVerticalGlue());
         pnMenu.add(btnTaiKhoan);
         pnMenu.add(btnLogout);
@@ -186,8 +183,6 @@ public class FrmMain extends JFrame {
 
     private void switchPanel(JComponent component) {
         pnContent.removeAll();
-        // LOGIC: Đảm bảo header luôn xuất hiện ở phía trên khi chuyển đổi giao diện
-        // Tạo một wrapper panel nếu cần, hoặc đơn giản là giữ header ở phía Bắc
         pnContent.add(component, BorderLayout.CENTER);
         pnContent.revalidate();
         pnContent.repaint();
@@ -216,8 +211,8 @@ public class FrmMain extends JFrame {
             switchPanel(new FrmMenu());
         });
 
-        btnThongKe.addActionListener(e -> {
-            setSelectedMenu(btnThongKe);
+        btnGoiMon.addActionListener(e -> {
+            setSelectedMenu(btnGoiMon);
             switchPanel(new FrmGoiMon());
         });
         btnDatBan.addActionListener(e -> {
@@ -292,6 +287,7 @@ public class FrmMain extends JFrame {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
         }
-        SwingUtilities.invokeLater(() -> new FrmMain().setVisible(true));
+        
+        new FrmMain().setVisible(true);
     }
 }

@@ -109,7 +109,6 @@ public class KhachHangDao {
         return false;
     }
     
-    // Tìm kiếm khách hàng (Quan trọng cho đặt bàn)
     public List<KhachHang> search(String keyword) {
         List<KhachHang> list = new ArrayList<>();
         String sql = "SELECT * FROM tbl_KhachHang WHERE TenKhachHang LIKE ? OR SoDienThoai LIKE ?";

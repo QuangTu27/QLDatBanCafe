@@ -118,9 +118,9 @@ public class DlgKhachHang extends JDialog {
         btn.setForeground(color);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setContentAreaFilled(false);
         btn.setOpaque(true);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         btn.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(color, 2),

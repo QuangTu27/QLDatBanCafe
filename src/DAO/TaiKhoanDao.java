@@ -68,7 +68,6 @@ public class TaiKhoanDao {
         return false;
     }
 
-    // Cập nhật thông tin
     public boolean update(TaiKhoan tk) {
         String sql = "UPDATE tbl_TaiKhoan SET MatKhau=?, TenHienThi=?, PhanQuyen=? WHERE MaTK=?";
         
@@ -92,7 +91,6 @@ public class TaiKhoanDao {
         return false;
     }
 
-    // Xóa tài khoản
     public boolean delete(String maTK) {
         String sql = "DELETE FROM tbl_TaiKhoan WHERE MaTK=?";
         
@@ -112,7 +110,6 @@ public class TaiKhoanDao {
         return false;
     }
     
-    // Tìm kiếm theo Username 
     public TaiKhoan selectByUsername(String username) {
         String sql = "SELECT * FROM tbl_TaiKhoan WHERE TenDangNhap=?";
         

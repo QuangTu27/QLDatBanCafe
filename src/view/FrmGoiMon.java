@@ -5,11 +5,12 @@
 package view;
 
 import DAO.ChiTietDatBanDAO;
-import DAO.BanDao;
+import DAO.DatBanDao;
 import entity.Ban;
 import entity.ChiTietDatBan;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component; // Mới thêm
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -23,10 +24,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.NumberFormat;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
@@ -64,10 +63,8 @@ public class FrmGoiMon extends JPanel {
     private JPanel pnlSoDoBan; // Panel chứa các nút bàn
     private JButton selectedBtnBan = null; // Lưu nút bàn đang chọn để đổi màu
 
-    // --- QUAN TRỌNG: DANH SÁCH LƯU TRẠNG THÁI ĐÃ THANH TOÁN ---
-    private Set<String> listBanDaThanhToan = new HashSet<>();
+    // [ĐÃ XÓA] listBanDaThanhToan vì dùng Database rồi
     // ----------------------------------------------------------
-
     private JButton btnThem, btnThanhToan, btnXoa, btnCapNhat;
 
     private JTable tblGioHang;
@@ -76,19 +73,27 @@ public class FrmGoiMon extends JPanel {
     private JPanel pnlLeft;
 
     private ChiTietDatBanDAO dao;
+    private DatBanDao daoDatBan = new DatBanDao();
     private DAO.BanDao banDao = new DAO.BanDao(); // Khai báo thêm Dao quản lý bàn
     private NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
 
     private String currentMaDatBan = ""; // Để trống ban đầu
-
+    private String currentMaBan = "";
+    
     public FrmGoiMon() {
         dao = new ChiTietDatBanDAO();
         initComponents();
         loadDataToMenu();
 
-        // Load bàn đầu tiên nếu có dữ liệu
-        if (!currentMaDatBan.isEmpty()) {
-            loadDataToTable();
+        // Gọi hàm tạo nút bàn
+        initListTables();
+
+        // Tự động click bàn đầu tiên nếu có (Logic an toàn)
+        if (pnlSoDoBan.getComponentCount() > 0) {
+            Component c = pnlSoDoBan.getComponent(0);
+            if (c instanceof JButton) {
+                ((JButton) c).doClick();
+            }
         }
     }
 
@@ -109,10 +114,8 @@ public class FrmGoiMon extends JPanel {
         pnlSoDoBan.setBorder(BorderFactory.createEmptyBorder(5, 5, 10, 5));
         pnlSoDoBan.setPreferredSize(new Dimension(0, 220));
 
-        // Gọi hàm tạo nút bàn
-        initListTables();
-
-        pnlLeft.add(pnlSoDoBan, BorderLayout.NORTH);
+        // Hàm initListTables sẽ gọi sau trong Constructor
+        pnlLeft.add(new JScrollPane(pnlSoDoBan), BorderLayout.NORTH); // Thêm JScrollPane cho an toàn
 
         // 2. BẢNG GIỎ HÀNG (CENTER)
         String[] headers = {"Mã CT", "Mã Đặt Bàn", "Mã Menu", "Số Lượng", "Đơn Giá"};
@@ -154,7 +157,6 @@ public class FrmGoiMon extends JPanel {
         btnThanhToan.setFont(new Font("Arial", Font.BOLD, 14));
         btnThanhToan.setBackground(new Color(0, 153, 76));
         btnThanhToan.setForeground(Color.BLACK);
-
         pnlThanhToan.add(lblTongTien);
         pnlThanhToan.add(Box.createHorizontalStrut(20));
         pnlThanhToan.add(btnThanhToan);
@@ -241,50 +243,51 @@ public class FrmGoiMon extends JPanel {
         addEvents();
     }
 
-    // --- HÀM TẠO SƠ ĐỒ BÀN (Đã cập nhật logic dấu tích) ---
+    // --- HÀM TẠO SƠ ĐỒ BÀN (SỬA LOGIC LẤY TỪ DB) ---
     private void initListTables() {
         pnlSoDoBan.removeAll();
 
-        // LẤY DANH SÁCH BÀN THỰC TẾ TỪ DATABASE
+        // 1. Dùng GetListBan để lấy cả cột TrangThai từ DB
         List<Ban> danhSachBan = banDao.selectAll();
-        List<String> listBanCoKhach = dao.getDanhSachMaDatBanCoMon();
+
+        if (danhSachBan == null || danhSachBan.isEmpty()) {
+            // Xử lý khi không có dữ liệu
+            JLabel lbl = new JLabel("Chưa có bàn nào trong CSDL");
+            pnlSoDoBan.add(lbl);
+            pnlSoDoBan.revalidate();
+            pnlSoDoBan.repaint();
+            return;
+        }
 
         for (Ban ban : danhSachBan) {
             String maBan = ban.getMaBan();
             String tenBan = ban.getTenBan();
 
             JButton btnBan = new JButton();
-            ImageIcon icon = XImage.getResizedIcon("logo_cafe.png", 50, 50);
-            if (icon != null) {
-                btnBan.setIcon(icon);
-            }
 
             btnBan.setVerticalTextPosition(SwingConstants.BOTTOM);
             btnBan.setHorizontalTextPosition(SwingConstants.CENTER);
             btnBan.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            boolean isCoKhach = listBanCoKhach.contains(maBan);
-            boolean isDaThanhToan = listBanDaThanhToan.contains(maBan);
+            // --- LOGIC MỚI: CHECK TRANG THÁI TỪ DB ---
+            String status = ban.getTrangThai();
+            if (status == null) {
+                status = "Trống";
+            }
+            final String finalStatus = status.trim(); // Biến final để dùng trong sự kiện
 
-            if (isCoKhach) {
-                if (isDaThanhToan) {
-                    // TRƯỜNG HỢP 1: Có khách + Đã thanh toán -> Xanh lá + Dấu tích
-                    btnBan.setBackground(new Color(144, 238, 144));
-                    btnBan.setText("<html><center>" + tenBan + "<br>"
-                                + "<b style='color:#006400; font-size:14px;'>Đã TT &#10004;</b>"
-                                + "</center></html>");
-                } else {
-                    // TRƯỜNG HỢP 2: Có khách + Chưa thanh toán -> Hồng
-                    btnBan.setBackground(new Color(255, 182, 193));
-                    btnBan.setText("<html><center>" + tenBan + "<br>"
-                                + "<b style='color:red'>(Có khách)</b>"
-                                + "</center></html>");
-                }
+            if (finalStatus.equalsIgnoreCase("Có khách")) {
+                btnBan.setBackground(new Color(255, 182, 193)); // Hồng
+                btnBan.setText("<html><center>" + tenBan + "<br>"
+                            + "<b style='color:red'>(Có khách)</b>"
+                            + "</center></html>");
+            } else if (finalStatus.equalsIgnoreCase("Đã đặt")) {
+                btnBan.setBackground(new Color(255, 255, 153)); // Vàng
+                btnBan.setText("<html><center>" + tenBan + "<br>"
+                            + "<b style='color:#8B8000'>(Đã đặt)</b>"
+                            + "</center></html>");
             } else {
-                // TRƯỜNG HỢP 3: Bàn trống -> Trắng
-                // Nếu bàn trống thì xóa luôn trạng thái thanh toán (để đón khách mới)
-                listBanDaThanhToan.remove(maBan);
-
+                // Mặc định: Trống
                 btnBan.setBackground(Color.WHITE);
                 btnBan.setText("<html><center>" + tenBan + "<br>"
                             + "<i style='color:green'>(Trống)</i>"
@@ -296,33 +299,34 @@ public class FrmGoiMon extends JPanel {
             btnBan.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    String maDBThucTe = dao.getMaDatBanDangHoatDong(ban.getMaBan());
+                    // Logic cũ của bạn: Lấy mã đặt bàn thực tế (nếu có)
+                    // Nếu "Trống" thì mã đặt bàn thực tế có thể là null hoặc chính là mã bàn
+                    // Mình giữ nguyên logic kiểm tra này để không phá vỡ quy trình
 
-                    if (maDBThucTe != null) {
-                        currentMaDatBan = maDBThucTe; // Bây giờ nó sẽ là "DB02" thay vì "B01"
-                        loadDataToTable();
-
-                        // Cập nhật tiêu đề bảng cho đúng
-                        String trangThaiText = isDaThanhToan ? " (Đã TT)" : "";
-                        ((javax.swing.border.TitledBorder) ((JScrollPane) tblGioHang.getParent().getParent()).getBorder())
-                                    .setTitle("Chi tiết món ăn - " + tenBan + " (" + maDBThucTe + ")" + trangThaiText);
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Bàn " + tenBan + " chưa được khởi tạo lượt đặt trong tbl_DatBan!");
-                        currentMaDatBan = "";
-                        tableModel.setRowCount(0);
+                    currentMaDatBan = maBan; // Mặc định lấy mã bàn (B001)
+// Nếu đang có khách, thử tìm mã Booking
+                    if (!finalStatus.equalsIgnoreCase("Trống")) {
+                        String maDBThucTe = dao.getMaDatBanDangHoatDong(ban.getMaBan());
+                        if (maDBThucTe != null) {
+                            currentMaDatBan = maDBThucTe;
+                        }
                     }
 
-                    resetMauCacBanKhac();
-                    btnBan.setBackground(new Color(173, 216, 230));
+                    loadDataToTable();
+
+                    // Cập nhật tiêu đề bảng
+                    try {
+                        String title = "Chi tiết món ăn - " + tenBan + " (" + finalStatus + ")";
+                        ((javax.swing.border.TitledBorder) ((JScrollPane) tblGioHang.getParent().getParent()).getBorder()).setTitle(title);
+                    } catch (Exception ex) {
+                    }
+
+                    // Đổi màu nút đang chọn (Xanh dương)
+                    initListTables_GiuMauChon(btnBan);
                     selectedBtnBan = btnBan;
                     pnlLeft.repaint();
                 }
             });
-
-            // Chọn bàn đầu tiên làm mặc định
-            if (currentMaDatBan.isEmpty()) {
-                currentMaDatBan = maBan;
-            }
 
             pnlSoDoBan.add(btnBan);
         }
@@ -331,11 +335,26 @@ public class FrmGoiMon extends JPanel {
         pnlSoDoBan.repaint();
     }
 
-    // Hàm phụ để reset màu nền các nút về trạng thái gốc (tránh lỗi hiển thị khi click)
-    private void resetMauCacBanKhac() {
-        // Thực tế hàm initListTables đã vẽ lại màu rất chuẩn rồi.
-        // Nhưng nếu muốn đổi màu tức thì khi click thì gọi lại initListTables() là an toàn nhất.
-        initListTables();
+    // Hàm phụ để reset màu nền các nút về trạng thái gốc (giữ nút đang chọn màu xanh)
+    private void initListTables_GiuMauChon(JButton btnDangChon) {
+        for (Component c : pnlSoDoBan.getComponents()) {
+            if (c instanceof JButton) {
+                JButton btn = (JButton) c;
+                if (btn == btnDangChon) {
+                    btn.setBackground(new Color(173, 216, 230)); // Xanh dương (Selected)
+                } else {
+                    // Trả về màu gốc dựa trên text
+                    String text = btn.getText();
+                    if (text.contains("Có khách")) {
+                        btn.setBackground(new Color(255, 182, 193));
+                    } else if (text.contains("Đã đặt")) {
+                        btn.setBackground(new Color(255, 255, 153));
+                    } else {
+                        btn.setBackground(Color.WHITE);
+                    }
+                }
+            }
+        }
     }
 
     private void loadDataToMenu() {
@@ -438,7 +457,6 @@ public class FrmGoiMon extends JPanel {
                     break;
                 }
             }
-
             if (!found) {
                 ChiTietDatBan ctdb = new ChiTietDatBan(
                             maCTMoi,
@@ -451,8 +469,11 @@ public class FrmGoiMon extends JPanel {
                 );
 
                 if (dao.insertChiTiet(ctdb)) {
+                    // --- UPDATE DATABASE: CHUYỂN TRẠNG THÁI THÀNH CÓ KHÁCH ---
+                    banDao.CapNhatTrangThaiBan(currentMaDatBan, "Có khách");
+
                     loadDataToTable();
-                    initListTables();
+                    initListTables(); // Vẽ lại màu bàn
                 }
             }
         });
@@ -479,7 +500,7 @@ public class FrmGoiMon extends JPanel {
                 if (confirm == JOptionPane.YES_OPTION) {
                     if (dao.deleteChiTiet(tableModel.getValueAt(row, 0).toString())) {
                         loadDataToTable();
-                        initListTables(); // Cập nhật lại màu bàn (nếu xóa hết món thì về màu trắng)
+                        // Nếu xóa hết món có thể check để trả bàn về Trống (Tùy chọn)
                     }
                 }
             } else {
@@ -487,28 +508,55 @@ public class FrmGoiMon extends JPanel {
             }
         });
 
-        // Event Thanh Toán (Đã sửa logic)
+        // Event Thanh Toán (LOGIC MỚI: RESET DB)
+        // Event Thanh Toán trong addEvents()
         btnThanhToan.addActionListener(e -> {
-            // Kiểm tra bàn trống
-            if (tableModel.getRowCount() == 0) {
-                JOptionPane.showMessageDialog(this, "Bàn này đang trống, không thể thanh toán!");
+
+            // 1. Kiểm tra có đơn đang hoạt động không
+            if (currentMaDatBan == null || currentMaDatBan.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Chưa chọn bàn để thanh toán!");
                 return;
             }
 
-            int confirm = JOptionPane.showConfirmDialog(this,
-                        "Xác nhận thanh toán cho " + currentMaDatBan + "?\nTổng tiền: " + lblTongTien.getText(),
-                        "Thanh Toán", JOptionPane.YES_NO_OPTION);
+            // 2. Kiểm tra có món ăn không
+            if (tableModel.getRowCount() == 0) {
+                JOptionPane.showMessageDialog(this, "Bàn này chưa gọi món!");
+                return;
+            }
 
-            if (confirm == JOptionPane.YES_OPTION) {
-                // 1. Thêm bàn hiện tại vào danh sách "Đã thanh toán"
-                listBanDaThanhToan.add(currentMaDatBan);
+            int confirm = JOptionPane.showConfirmDialog(
+                        this,
+                        "Xác nhận thanh toán đơn: " + currentMaDatBan
+                        + "\n" + lblTongTien.getText(),
+                        "Xác nhận thanh toán",
+                        JOptionPane.YES_NO_OPTION
+            );
 
-                // 2. Load lại sơ đồ bàn để nó hiện dấu tích lên
+            if (confirm != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            // 3. KẾT THÚC ĐƠN + GIẢI PHÓNG BÀN (Transaction)
+            boolean success = daoDatBan.ketThucDatBan(currentMaDatBan, currentMaBan);
+
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Thanh toán thành công!");
+
+                // 4. Reset giao diện
+                currentMaDatBan = "";
+                currentMaBan = "";
+
+                tableModel.setRowCount(0);
+                lblTongTien.setText("Tổng tiền: 0 ₫");
+
+                // 5. Vẽ lại sơ đồ bàn → đổi màu Trống
                 initListTables();
 
-                JOptionPane.showMessageDialog(this, "Đã ghi nhận thanh toán! Bàn hiện dấu tích xanh.");
+            } else {
+                JOptionPane.showMessageDialog(this, "Lỗi khi thanh toán!");
             }
         });
+
     }
 
     public static void main(String[] args) {
@@ -516,6 +564,10 @@ public class FrmGoiMon extends JPanel {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
         }
-        SwingUtilities.invokeLater(() -> new FrmDatBan().setVisible(true));
+        // Test nhanh
+        javax.swing.JFrame f = new javax.swing.JFrame();
+        f.add(new FrmGoiMon());
+        f.pack();
+        f.setVisible(true);
     }
 }

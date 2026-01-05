@@ -274,4 +274,15 @@ public class ChiTietDatBanDAO {
         }
         return listMa;
     }
+
+    public boolean deleteAllChiTietByMaDatBan(String maDB) {
+        String sql = "DELETE FROM tbl_ChiTietDatBan WHERE MaDatBan = ?";
+        try (Connection conn = new MyConnection().getInstance(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, maDB);
+            return ps.executeUpdate() >= 0; // Trả về true kể cả khi bàn đó vốn không có món nào
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

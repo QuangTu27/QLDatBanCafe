@@ -7,26 +7,27 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class BanDao {
-private connect.MyConnection myConn = new connect.MyConnection();
+
+    private connect.MyConnection myConn = new connect.MyConnection();
+
     // Hàm lấy danh sách: Đã thêm .trim() để xử lý CHAR(10)
     public List<Ban> selectAll() {
         List<Ban> list = new ArrayList<>();
         String sql = "SELECT * FROM tbl_Ban";
         Connection conn = new MyConnection().getInstance();
-        
+
         if (conn == null) {
             System.out.println("LỖI: Không thể kết nối Database!");
             return list;
         }
-        
-        try (PreparedStatement ps = conn.prepareStatement(sql); 
-             ResultSet rs = ps.executeQuery()) {
+
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new Ban(
-                    rs.getString("MaBan").trim(), 
-                    rs.getString("TenBan"),
-                    rs.getInt("SoGhe"),
-                    rs.getString("TrangThai")
+                            rs.getString("MaBan").trim(),
+                            rs.getString("TenBan"),
+                            rs.getInt("SoGhe"),
+                            rs.getString("TrangThai")
                 ));
             }
         } catch (Exception e) {
@@ -38,8 +39,7 @@ private connect.MyConnection myConn = new connect.MyConnection();
     // MỚI: Hàm kiểm tra trùng mã trước khi Insert để tránh lỗi
     public boolean checkDuplicate(String maBan) {
         String sql = "SELECT COUNT(*) FROM tbl_Ban WHERE MaBan = ?";
-        try (Connection conn = new MyConnection().getInstance();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = new MyConnection().getInstance(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, maBan);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -59,8 +59,7 @@ private connect.MyConnection myConn = new connect.MyConnection();
         }
 
         String sql = "INSERT INTO tbl_Ban (MaBan, TenBan, SoGhe, TrangThai) VALUES (?, ?, ?, ?)";
-        try (Connection conn = new MyConnection().getInstance();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = new MyConnection().getInstance(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, b.getMaBan());
             ps.setString(2, b.getTenBan());
             ps.setInt(3, b.getSoGhe());
@@ -74,8 +73,7 @@ private connect.MyConnection myConn = new connect.MyConnection();
 
     public boolean update(Ban b) {
         String sql = "UPDATE tbl_Ban SET TenBan=?, SoGhe=?, TrangThai=? WHERE MaBan=?";
-        try (Connection conn = new MyConnection().getInstance();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = new MyConnection().getInstance(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, b.getTenBan());
             ps.setInt(2, b.getSoGhe());
             ps.setString(3, b.getTrangThai());
@@ -89,8 +87,7 @@ private connect.MyConnection myConn = new connect.MyConnection();
 
     public boolean delete(String maBan) {
         String sql = "DELETE FROM tbl_Ban WHERE MaBan=?";
-        try (Connection conn = new MyConnection().getInstance();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = new MyConnection().getInstance(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, maBan);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -98,21 +95,51 @@ private connect.MyConnection myConn = new connect.MyConnection();
             return false;
         }
     }
-   public List<Ban> getDanhSachBanTrong() {
-    List<Ban> list = new ArrayList<>();
-    // Dùng N'Trống' vì cột TrangThai là NVARCHAR
-    String sql = "SELECT * FROM tbl_Ban WHERE TrangThai = N'Trống'"; 
-    try (Connection conn = myConn.getInstance();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            Ban b = new Ban();
-            b.setMaBan(rs.getString("MaBan"));
-            b.setTenBan(rs.getString("TenBan"));
-            list.add(b);
+
+    public List<Ban> getDanhSachBanTrong() {
+        List<Ban> list = new ArrayList<>();
+        // Dùng N'Trống' vì cột TrangThai là NVARCHAR
+        String sql = "SELECT * FROM tbl_Ban WHERE TrangThai = N'Trống'";
+        try (Connection conn = myConn.getInstance(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Ban b = new Ban();
+                b.setMaBan(rs.getString("MaBan"));
+                b.setTenBan(rs.getString("TenBan"));
+                list.add(b);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    } catch (Exception e) { e.printStackTrace(); }
-    return list;
-}
-   
+        return list;
+    }
+    
+    public boolean CapNhatTrangThaiBan(String maBan, String trangThaiMoi) {
+        MyConnection myCon = new MyConnection();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        
+        String sql = "UPDATE tbl_Ban SET TrangThai = ? WHERE MaBan = ?";
+        
+        try {
+            conn = myCon.getInstance();
+            ps = conn.prepareStatement(sql);
+            
+            ps.setString(1, trangThaiMoi); // Ví dụ: "Có khách"
+            ps.setString(2, maBan);        // Ví dụ: "B001"
+            
+            return ps.executeUpdate() > 0; // Trả về true nếu thành công
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            myCon.closeConnection();
+            try {
+                if (ps != null) ps.close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
 }
