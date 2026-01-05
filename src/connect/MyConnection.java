@@ -1,61 +1,57 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package connect;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-/**
- *
- * @author Admin
- * SingleTon
- */
 public class MyConnection {
-    private String userName = "sa";
-    private String password = "123456";
-    private String url ="jdbc:sqlserver://localhost:1433;" +"databaseName=QL_DatBan_Cafe;"
-                +"encrypt=false;" +"trustServerCertificate=true;";
 
-    private Connection conn ;
+    // Sử dụng chuỗi kết nối Windows Authentication cho SQLEXPRESS
+    private final String url = "jdbc:sqlserver://localhost\\SQLEXPRESS;" 
+                             + "databaseName=QL_DatBan_Cafe;"
+                             + "integratedSecurity=true;" 
+                             + "encrypt=true;trustServerCertificate=true;";
 
-    public Connection getInstance(){
-        if(conn == null){
+    private Connection conn; // Thêm lại biến này để tương thích với các hàm cũ
+
+    public Connection getInstance() {
+        // Nếu kết nối cũ đã đóng hoặc chưa có, thì tạo mới
+        try {
+            if (conn == null || conn.isClosed()) {
+                conn = openConnection();
+            }
+        } catch (SQLException e) {
             conn = openConnection();
         }
         return conn;
     }
-    
-    private Connection openConnection() {
+
+    public Connection openConnection() {
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            conn = DriverManager.getConnection(url, userName, password);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            return DriverManager.getConnection(url);
+        } catch (Exception e) {
+            System.err.println("Lỗi kết nối: " + e.getMessage());
+            return null;
         }
-        return conn;
     }
 
+    // THÊM LẠI HÀM NÀY ĐỂ HẾT LỖI NoSuchMethodError
     public void closeConnection() {
-        if(conn != null){
-            try {
+        try {
+            if (conn != null && !conn.isClosed()) {
                 conn.close();
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
-    
+
     public static void main(String[] args) {
-        MyConnection myConnection = new MyConnection();
-        if(myConnection.getInstance() != null){
-            System.out.println("Connection successfull");
-        }else{
-            System.out.println("Connection error");
+        MyConnection myConn = new MyConnection();
+        if (myConn.getInstance() != null) {
+            System.out.println("KẾT NỐI WINDOWS THÀNH CÔNG!");
+            myConn.closeConnection();
         }
     }
 }

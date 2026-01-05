@@ -27,7 +27,6 @@ public class DlgBan extends JDialog {
     private JTextField txtMaBan, txtTenBan, txtSoGhe;
     private JComboBox<String> cboTrangThai;
     private JButton btnLuu, btnHuy;
-
     private BanDao dao = new BanDao();
     private Ban banEditing = null;
     private boolean result = false;
@@ -146,51 +145,63 @@ public class DlgBan extends JDialog {
         });
         return btn;
     }
-
-    private void xuLyLuu() {
-        if (!validateForm()) return;
-
-        Ban banMoi = new Ban(
-                txtMaBan.getText().trim(),
-                txtTenBan.getText().trim(),
-                Integer.parseInt(txtSoGhe.getText().trim()),
-                cboTrangThai.getSelectedItem().toString()
-        );
-
-        boolean thanhCong = (banEditing == null) ? dao.insert(banMoi) : dao.update(banMoi);
-
-        if (thanhCong) {
-            JOptionPane.showMessageDialog(this, "Lưu dữ liệu bàn thành công!");
-            result = true;
-            dispose();
-        } else {
-            JOptionPane.showMessageDialog(this, "Lỗi: Trùng mã bàn hoặc lỗi CSDL!");
-        }
+private boolean validateForm() {
+    if (txtMaBan.getText().trim().isEmpty() || txtTenBan.getText().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Mã bàn và Tên bàn!");
+        return false;
     }
-
-    private boolean validateForm() {
-        if (txtMaBan.getText().trim().isEmpty() || txtTenBan.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Mã bàn và Tên bàn!");
+    try {
+        int soGhe = Integer.parseInt(txtSoGhe.getText().trim());
+        if (soGhe <= 0) {
+            JOptionPane.showMessageDialog(this, "Số ghế phải lớn hơn 0!");
             return false;
         }
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "Số ghế phải là một con số!");
+        return false;
+    }
+    return true;
+}
+   private void xuLyLuu() {
+    if (!validateForm()) return;
 
-        // Kiểm tra số ghế phải là số nguyên dương
-        try {
-            int soGhe = Integer.parseInt(txtSoGhe.getText().trim());
-            if (soGhe <= 0) {
-                JOptionPane.showMessageDialog(this, "Số ghế phải lớn hơn 0!");
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Số ghế phải là một con số!");
-            txtSoGhe.requestFocus();
-            return false;
+    // Khởi tạo đối tượng bàn từ form
+    Ban banMoi = new Ban(
+            txtMaBan.getText().trim(),
+            txtTenBan.getText().trim(),
+            Integer.parseInt(txtSoGhe.getText().trim()),
+            cboTrangThai.getSelectedItem().toString()
+    );
+
+    // KIỂM TRA KẾT NỐI TRƯỚC KHI LƯU
+    if (new connect.MyConnection().getInstance() == null) {
+        JOptionPane.showMessageDialog(this, "Lỗi: Không thể kết nối đến cơ sở dữ liệu!");
+        return;
+    }
+
+    boolean thanhCong;
+    if (banEditing == null) {
+        // Nếu là thêm mới, kiểm tra trùng mã trước
+        if (dao.checkDuplicate(banMoi.getMaBan())) {
+            JOptionPane.showMessageDialog(this, "Mã bàn này đã tồn tại! Vui lòng nhập mã khác.");
+            txtMaBan.requestFocus();
+            return;
         }
-
-        return true;
+        thanhCong = dao.insert(banMoi);
+    } else {
+        thanhCong = dao.update(banMoi);
     }
 
-    public boolean getResult() {
-        return result;
+    if (thanhCong) {
+        JOptionPane.showMessageDialog(this, "Lưu dữ liệu bàn thành công!");
+        result = true;
+        dispose();
+    } else {
+        JOptionPane.showMessageDialog(this, "Lưu thất bại! Vui lòng kiểm tra lại dữ liệu.");
     }
+}
+   // Hàm giúp FrmBan lấy kết quả sau khi đóng Dialog
+public boolean getResult() {
+    return result;
+}
 }
