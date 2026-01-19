@@ -44,10 +44,9 @@ public class FrmLogin extends JFrame {
         setSize(750, 450);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(new GridLayout(1, 2)); // Chia đôi màn hình: Trái - Phải
+        setLayout(new GridLayout(1, 2)); // Chia đôi
         setResizable(false);
 
-        // panel trái
         JPanel pnlLeft = new JPanel();
         pnlLeft.setBackground(MAIN_COLOR);
         pnlLeft.setLayout(new GridBagLayout());
@@ -68,6 +67,7 @@ public class FrmLogin extends JFrame {
         // Add vào Panel trái
         GridBagConstraints gbcLeft = new GridBagConstraints();
         gbcLeft.gridx = 0;
+        
         gbcLeft.gridy = 0;
         pnlLeft.add(lblIcon, gbcLeft);
 
@@ -116,6 +116,7 @@ public class FrmLogin extends JFrame {
         btnLogin.setPreferredSize(new Dimension(0, 45));
 
         gbc.gridx = 0;
+        
         gbc.gridy = 0;
         gbc.insets = new Insets(0, 0, 30, 0);
         pnlRight.add(lblTitle, gbc);

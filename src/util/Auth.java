@@ -23,7 +23,6 @@ public class Auth {
     }
 
     public static boolean isManager() {
-        // Phải đăng nhập rồi VÀ loại tài khoản là 1 (Admin)
         return isLogin() && user.getPhanQuyen() == 1;
     }
 }

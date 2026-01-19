@@ -22,6 +22,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 
 public class DlgTaiKhoan extends JDialog {
 
@@ -31,15 +32,15 @@ public class DlgTaiKhoan extends JDialog {
     private JButton btnLuu, btnHuy;
 
     private TaiKhoanDao dao = new TaiKhoanDao();
-    private TaiKhoan taiKhoan; 
+    private TaiKhoan taiKhoan;
     private boolean result = false;
 
     public DlgTaiKhoan(Window parent, TaiKhoan tk) {
         super(parent, ModalityType.APPLICATION_MODAL);
         this.taiKhoan = tk;
-        
+
         initComponents();
-        
+
         if (tk != null) {
             txtMaTK.setText(taiKhoan.getMaTK());
             txtMaTK.setEditable(false);
@@ -50,7 +51,7 @@ public class DlgTaiKhoan extends JDialog {
             txtTenHienThi.setText(taiKhoan.getTenHienThi());
             cboPhanQuyen.setSelectedIndex(taiKhoan.getPhanQuyen());
         }
-        
+
         setLocationRelativeTo(parent);
     }
 
@@ -62,6 +63,7 @@ public class DlgTaiKhoan extends JDialog {
         JPanel pnlHeader = new JPanel();
         pnlHeader.setBackground(new Color(46, 204, 113));
         pnlHeader.setPreferredSize(new Dimension(0, 30));
+
         JLabel lblTitle = new JLabel(taiKhoan == null ? "THÊM TÀI KHOẢN" : "CẬP NHẬT TÀI KHOẢN");
         lblTitle.setForeground(Color.WHITE);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
@@ -70,7 +72,7 @@ public class DlgTaiKhoan extends JDialog {
 
         // form
         JPanel pnlForm = new JPanel(new GridLayout(5, 2, 15, 20));
-        pnlForm.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+        pnlForm.setBorder(new EmptyBorder(30, 40, 30, 40));
         Font labelFont = new Font("Segoe UI", Font.PLAIN, 15);
 
         JLabel lblMa = new JLabel("Mã TK:");
@@ -132,7 +134,7 @@ public class DlgTaiKhoan extends JDialog {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setContentAreaFilled(false); 
+        btn.setContentAreaFilled(false);
         btn.setOpaque(true);
 
         btn.setBorder(BorderFactory.createCompoundBorder(
@@ -140,18 +142,18 @@ public class DlgTaiKhoan extends JDialog {
                     BorderFactory.createEmptyBorder(10, 30, 10, 30)
         ));
 
-        // Hiệu ứng Hover
+        // Hover
         btn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                btn.setBackground(color);      
+                btn.setBackground(color);
                 btn.setForeground(Color.WHITE);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                btn.setBackground(Color.WHITE); 
-                btn.setForeground(color);      
+                btn.setBackground(Color.WHITE);
+                btn.setForeground(color);
             }
         });
 

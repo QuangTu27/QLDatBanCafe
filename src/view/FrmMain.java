@@ -16,7 +16,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -75,13 +74,11 @@ public class FrmMain extends JFrame {
         lblHello.setFont(new Font("Segoe UI", Font.ITALIC, 18));
         pnHeader.add(lblHello);
 
-        // Khởi tạo pnBan để chứa các nút bàn
-        pnBan = new JPanel(new GridLayout(0, 5, 15, 15)); // 5 cột, khoảng cách 15px
+        pnBan = new JPanel(new GridLayout(0, 5, 15, 15)); // 5 cột, gap 15px
         pnBan.setBackground(new Color(245, 245, 245));
         pnBan.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         pnContent.add(pnHeader, BorderLayout.NORTH);
-        //Mặc định đưa sơ đồ bàn vào trung tâm nội dung
         pnContent.add(pnBan, BorderLayout.CENTER);
 
         add(pnMenu, BorderLayout.WEST);
@@ -93,7 +90,7 @@ public class FrmMain extends JFrame {
         try {
             ImageIcon icon = new ImageIcon(getClass().getResource(iconPath));
             Image img = icon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
-            btn.setIcon(new ImageIcon(img));
+            btn.setIcon(new ImageIcon(img));  
         } catch (Exception e) {
             System.err.println("Không load được icon: " + iconPath);
         }
@@ -106,7 +103,7 @@ public class FrmMain extends JFrame {
         btn.setBackground(COL_SIDEBAR_BG);
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setIconTextGap(10);
-        btn.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 0));
+        btn.setBorder(new EmptyBorder(0, 30, 0, 0));
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
        
@@ -165,6 +162,7 @@ public class FrmMain extends JFrame {
         pnMenu.add(btnMenu);
         pnMenu.add(btnDatBan);
         pnMenu.add(btnGoiMon);
+        
         pnMenu.add(Box.createVerticalGlue());
         pnMenu.add(btnTaiKhoan);
         pnMenu.add(btnLogout);
@@ -191,7 +189,6 @@ public class FrmMain extends JFrame {
     private void addEvents() {
         btnTrangChu.addActionListener(e -> {
             setSelectedMenu(btnTrangChu);
-            // LOGIC: Mỗi lần bấm Trang chủ thì làm mới dữ liệu từ Database
             loadSoDoBan();
             switchPanel(pnBan);
         });
@@ -229,7 +226,8 @@ public class FrmMain extends JFrame {
         });
 
         btnLogout.addActionListener(e -> {
-            int chon = JOptionPane.showConfirmDialog(this, "Đăng xuất?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+            int chon = JOptionPane.showConfirmDialog(this, "Đăng xuất?", 
+                        "Xác nhận", JOptionPane.YES_NO_OPTION);
             if (chon == JOptionPane.YES_OPTION) {
                 Auth.clear();
                 new FrmLogin().setVisible(true);
@@ -266,7 +264,7 @@ public class FrmMain extends JFrame {
 
     private JButton createBanCard(String name, String status, Color color) {
         JButton btn = new JButton("<html><center><h3>" + name + "</h3>" + status + "</center></html>");
-        btn.setPreferredSize(new Dimension(130, 130)); // Đảm bảo card có kích thước để hiển thị
+        btn.setPreferredSize(new Dimension(130, 130));
         btn.setBackground(color);
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);

@@ -34,6 +34,7 @@ public class FrmTaiKhoan extends JPanel {
 
     private JTable table;
     private DefaultTableModel model;
+    
     private JTextField txtTimKiem;
     private JComboBox<String> cboLoai;
     private JButton btnThem, btnSua, btnXoa, btnLamMoi;
@@ -106,13 +107,11 @@ public class FrmTaiKhoan extends JPanel {
         return border;
     }
 
-    // hàm tạo button
     private JButton createToolButton(String text, Color color, String iconPath) {
         JButton btn = new JButton(text);
         btn.setBackground(Color.WHITE);
         btn.setForeground(color);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         btn.setBorder(BorderFactory.createCompoundBorder(
