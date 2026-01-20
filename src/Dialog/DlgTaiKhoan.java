@@ -32,24 +32,24 @@ public class DlgTaiKhoan extends JDialog {
     private JButton btnLuu, btnHuy;
 
     private TaiKhoanDao dao = new TaiKhoanDao();
-    private TaiKhoan taiKhoan;
+    private TaiKhoan tkEditing;
     private boolean result = false;
 
     public DlgTaiKhoan(Window parent, TaiKhoan tk) {
         super(parent, ModalityType.APPLICATION_MODAL);
-        this.taiKhoan = tk;
+        this.tkEditing = tk;
 
         initComponents();
 
         if (tk != null) {
-            txtMaTK.setText(taiKhoan.getMaTK());
+            txtMaTK.setText(tk.getMaTK());
             txtMaTK.setEditable(false);
 
-            txtTenDN.setText(taiKhoan.getTenDangNhap());
+            txtTenDN.setText(tk.getTenDangNhap());
             txtTenDN.setEditable(false);
 
-            txtTenHienThi.setText(taiKhoan.getTenHienThi());
-            cboPhanQuyen.setSelectedIndex(taiKhoan.getPhanQuyen());
+            txtTenHienThi.setText(tk.getTenHienThi());
+            cboPhanQuyen.setSelectedIndex(tk.getPhanQuyen());
         }
 
         setLocationRelativeTo(parent);
@@ -64,7 +64,7 @@ public class DlgTaiKhoan extends JDialog {
         pnlHeader.setBackground(new Color(46, 204, 113));
         pnlHeader.setPreferredSize(new Dimension(0, 30));
 
-        JLabel lblTitle = new JLabel(taiKhoan == null ? "THÊM TÀI KHOẢN" : "CẬP NHẬT TÀI KHOẢN");
+        JLabel lblTitle = new JLabel(tkEditing == null ? "THÊM TÀI KHOẢN" : "CẬP NHẬT TÀI KHOẢN");
         lblTitle.setForeground(Color.WHITE);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         pnlHeader.add(lblTitle);
@@ -164,14 +164,14 @@ public class DlgTaiKhoan extends JDialog {
         if (!validateForm()) {
             return;
         }
-
+        
         String ma = txtMaTK.getText().trim();
         String user = txtTenDN.getText().trim();
         String pass = new String(txtMatKhau.getPassword());
         String ten = txtTenHienThi.getText().trim();
         int role = cboPhanQuyen.getSelectedIndex();
 
-        if (taiKhoan == null) {
+        if (tkEditing == null) {
             TaiKhoan tk = new TaiKhoan(ma, user, pass, ten, role);
             if (dao.insert(tk)) {
                 JOptionPane.showMessageDialog(this, "Thêm thành công!");
@@ -181,15 +181,15 @@ public class DlgTaiKhoan extends JDialog {
                 JOptionPane.showMessageDialog(this, "Thêm thất bại!");
             }
         } else {
-            taiKhoan.setTenHienThi(ten);
-            taiKhoan.setPhanQuyen(role);
+            tkEditing.setTenHienThi(ten);
+            tkEditing.setPhanQuyen(role);
 
             // Cho phép đổi mật khẩu nếu có nhập
             if (!pass.isEmpty()) {
-                taiKhoan.setMatKhau(pass);
+                tkEditing.setMatKhau(pass);
             }
 
-            if (dao.update(taiKhoan)) {
+            if (dao.update(tkEditing)) {
                 JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
                 result = true;
                 dispose();
@@ -207,7 +207,7 @@ public class DlgTaiKhoan extends JDialog {
             return false;
         }
 
-        if (taiKhoan == null && txtMatKhau.getPassword().length == 0) {
+        if (tkEditing == null && txtMatKhau.getPassword().length == 0) {
             JOptionPane.showMessageDialog(this, "Mật khẩu không được để trống!");
             return false;
         }

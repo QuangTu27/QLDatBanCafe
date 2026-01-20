@@ -108,35 +108,4 @@ public class KhachHangDao {
         }
         return false;
     }
-    
-    public List<KhachHang> search(String keyword) {
-        List<KhachHang> list = new ArrayList<>();
-        String sql = "SELECT * FROM tbl_KhachHang WHERE TenKhachHang LIKE ? OR SoDienThoai LIKE ?";
-        
-        MyConnection myConn = new MyConnection();
-        Connection conn = myConn.getInstance();
-        
-        if (conn != null) {
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                String key = "%" + keyword + "%";
-                ps.setString(1, key);
-                ps.setString(2, key);
-                
-                ResultSet rs = ps.executeQuery();
-                while (rs.next()) {
-                    KhachHang kh = new KhachHang();
-                    kh.setMaKhachHang(rs.getString("MaKhachHang"));
-                    kh.setTenKhachHang(rs.getString("TenKhachHang"));
-                    kh.setSoDienThoai(rs.getString("SoDienThoai"));
-                    kh.setEmail(rs.getString("Email"));
-                    list.add(kh);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                myConn.closeConnection();
-            }
-        }
-        return list;
-    }
 }

@@ -106,7 +106,6 @@ public class FrmKhachHang extends JPanel {
         TitledBorder border = BorderFactory.createTitledBorder(
                     BorderFactory.createLineBorder(new Color(200, 200, 200), 1), title);
         border.setTitleFont(new Font("Segoe UI", Font.BOLD, 14));
-        border.setTitleColor(new Color(100, 100, 100));
         return border;
     }
 
@@ -123,7 +122,6 @@ public class FrmKhachHang extends JPanel {
                     BorderFactory.createEmptyBorder(8, 15, 8, 15)
         ));
 
-        //load icon
         ImageIcon icon = new ImageIcon(getClass().getResource(iconPath));
         Image img = icon.getImage().getScaledInstance(28, 28, Image.SCALE_SMOOTH);
         btn.setIcon(new ImageIcon(img));
@@ -134,7 +132,6 @@ public class FrmKhachHang extends JPanel {
         return btn;
     }
 
-    // DefaultTableModel
     private void initTable() {
         String[] cols = {"Mã KH", "Tên khách hàng", "Số điện thoại", "Email"};
         model = new DefaultTableModel(cols, 0) {
@@ -162,7 +159,6 @@ public class FrmKhachHang extends JPanel {
         add(scroll, BorderLayout.CENTER);
     }
 
-    //CRUD
     private void themKhachHang() {
         DlgKhachHang dlg = new DlgKhachHang(SwingUtilities.getWindowAncestor(this), null);
         dlg.setVisible(true);

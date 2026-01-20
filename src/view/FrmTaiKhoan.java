@@ -38,7 +38,7 @@ public class FrmTaiKhoan extends JPanel {
     private JTextField txtTimKiem;
     private JComboBox<String> cboLoai;
     private JButton btnThem, btnSua, btnXoa, btnLamMoi;
-    private JPanel pnlTimKiem;
+    private JPanel pnlChucNang, pnlTimKiem;
 
     private TaiKhoanDao dao = new TaiKhoanDao();
     private List<TaiKhoan> fullList = new ArrayList<>();
@@ -61,7 +61,7 @@ public class FrmTaiKhoan extends JPanel {
         pnlTop.setPreferredSize(new Dimension(0, 130));
 
         // chức năng 
-        JPanel pnlChucNang = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
+        pnlChucNang = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
         pnlChucNang.setBackground(Color.WHITE);
         pnlChucNang.setBorder(createGroupBorder("Chức năng"));
 
@@ -98,12 +98,10 @@ public class FrmTaiKhoan extends JPanel {
         add(pnlTop, BorderLayout.NORTH);
     }
 
-    // hàm tạo viền có tiêu đề
     private TitledBorder createGroupBorder(String title) {
         TitledBorder border = BorderFactory.createTitledBorder(
                     BorderFactory.createLineBorder(new Color(200, 200, 200), 1), title);
         border.setTitleFont(new Font("Segoe UI", Font.BOLD, 14));
-        border.setTitleColor(new Color(100, 100, 100));
         return border;
     }
 
@@ -118,7 +116,7 @@ public class FrmTaiKhoan extends JPanel {
                     BorderFactory.createLineBorder(color, 2),
                     BorderFactory.createEmptyBorder(8, 15, 8, 15)
         ));
-        //load icon
+        
         ImageIcon icon = new ImageIcon(getClass().getResource(iconPath));
         Image img = icon.getImage().getScaledInstance(28, 28, Image.SCALE_SMOOTH);
         btn.setIcon(new ImageIcon(img));
@@ -129,7 +127,6 @@ public class FrmTaiKhoan extends JPanel {
         return btn;
     }
 
-    // DefaultTableModel
     private void initTable() {
         String[] cols = {"Mã TK", "Tên đăng nhập", "Mật khẩu", "Tên hiển thị", "Vai trò"};
         model = new DefaultTableModel(cols, 0) {
@@ -157,7 +154,6 @@ public class FrmTaiKhoan extends JPanel {
         add(scroll, BorderLayout.CENTER);
     }
 
-    // CRUD
     private void themTaiKhoan() {
         DlgTaiKhoan dlg = new DlgTaiKhoan(SwingUtilities.getWindowAncestor(this), null);
         dlg.setVisible(true);

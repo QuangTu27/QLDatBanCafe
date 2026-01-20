@@ -63,7 +63,6 @@ public class FrmMain extends JFrame {
         initSidebar();
 
         pnContent = new JPanel(new BorderLayout());
-        pnContent.setBackground(new Color(245, 245, 245));
 
         JPanel pnHeader = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnHeader.setBackground(Color.WHITE);
@@ -74,7 +73,7 @@ public class FrmMain extends JFrame {
         lblHello.setFont(new Font("Segoe UI", Font.ITALIC, 18));
         pnHeader.add(lblHello);
 
-        pnBan = new JPanel(new GridLayout(0, 5, 15, 15)); // 5 cột, gap 15px
+        pnBan = new JPanel(new GridLayout(0, 4, 15, 15)); // 4 cột
         pnBan.setBackground(new Color(245, 245, 245));
         pnBan.setBorder(new EmptyBorder(20, 20, 20, 20));
 

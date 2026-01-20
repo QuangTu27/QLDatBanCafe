@@ -10,7 +10,6 @@ public class BanDao {
 
     private connect.MyConnection myConn = new connect.MyConnection();
 
-    // Hàm lấy danh sách: Đã thêm .trim() để xử lý CHAR(10)
     public List<Ban> selectAll() {
         List<Ban> list = new ArrayList<>();
         String sql = "SELECT * FROM tbl_Ban";
@@ -36,7 +35,6 @@ public class BanDao {
         return list;
     }
 
-    // MỚI: Hàm kiểm tra trùng mã trước khi Insert để tránh lỗi
     public boolean checkDuplicate(String maBan) {
         String sql = "SELECT COUNT(*) FROM tbl_Ban WHERE MaBan = ?";
         try (Connection conn = new MyConnection().getInstance(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -52,7 +50,6 @@ public class BanDao {
     }
 
     public boolean insert(Ban b) {
-        // Kiểm tra trùng trước khi thực hiện lệnh SQL
         if (checkDuplicate(b.getMaBan())) {
             System.out.println("Lỗi: Mã bàn " + b.getMaBan() + " đã tồn tại!");
             return false;
@@ -98,7 +95,6 @@ public class BanDao {
 
     public List<Ban> getDanhSachBanTrong() {
         List<Ban> list = new ArrayList<>();
-        // Dùng N'Trống' vì cột TrangThai là NVARCHAR
         String sql = "SELECT * FROM tbl_Ban WHERE TrangThai = N'Trống'";
         try (Connection conn = myConn.getInstance(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ResultSet rs = ps.executeQuery();
@@ -125,10 +121,10 @@ public class BanDao {
             conn = myCon.getInstance();
             ps = conn.prepareStatement(sql);
             
-            ps.setString(1, trangThaiMoi); // Ví dụ: "Có khách"
-            ps.setString(2, maBan);        // Ví dụ: "B001"
+            ps.setString(1, trangThaiMoi); 
+            ps.setString(2, maBan);        
             
-            return ps.executeUpdate() > 0; // Trả về true nếu thành công
+            return ps.executeUpdate() > 0; 
             
         } catch (Exception e) {
             e.printStackTrace();
